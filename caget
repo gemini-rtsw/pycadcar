@@ -1,0 +1,2 @@
+#!/bin/bash
+python caget.py "$1"

@@ -1,0 +1,652 @@
+import asyncio
+import enum
+import importlib
+import os
+import queue
+import sys
+import threading
+import time
+from concurrent import futures
+from functools import partial
+from pathlib import Path
+from logging import getLogger
+
+
+from caproto.server import PVGroup, ioc_arg_parser, pvproperty, run
+from caproto.asyncio.server import start_server
+from caproto import ChannelType
+
+
+
+from caproto.server import PVGroup, pvproperty
+from caproto import ChannelType
+
+class GnirsDataManagerIOC2(PVGroup):
+    name = pvproperty(name='NAME',
+                                dtype=ChannelType.CHAR,
+                                max_length=61,
+                                report_as_string=True,
+                                doc='Record Name')
+
+    desc = pvproperty(name='DESC',
+                                dtype=ChannelType.CHAR,
+                                max_length=41,
+                                report_as_string=True,
+                                doc='Descriptor')
+
+    asg = pvproperty(name='ASG',
+                                dtype=ChannelType.CHAR,
+                                max_length=29,
+                                report_as_string=True,
+                                doc='Access Security Group')
+
+    scan = pvproperty(name='SCAN',
+                                dtype=ChannelType.ENUM,
+                                max_length=29,
+                                report_as_string=True,
+                                doc='Scan Mechanism')
+
+    pini = pvproperty(name='PINI',
+                                dtype=ChannelType.ENUM,
+                                max_length=29,
+                                report_as_string=True,
+                                doc='Process at iocInit')
+
+    phas = pvproperty(name='PHAS',
+                                dtype=ChannelType.CHAR,
+                                max_length=29,
+                                report_as_string=True,
+                                doc='Scan Phase')
+
+    evnt = pvproperty(name='EVNT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Event Name')
+
+    tse = pvproperty(name='TSE',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Time Stamp Event')
+
+    tsel = pvproperty(name='TSEL',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Time Stamp Link')
+
+    dtyp = pvproperty(name='DTYP',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Device Type')
+
+    disv = pvproperty(name='DISV',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Disable Value')
+
+    disa = pvproperty(name='DISA',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Disable')
+
+    sdis = pvproperty(name='SDIS',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Scanning Disable')
+
+    mlok = pvproperty(name='MLOK',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Monitor lock')
+
+    mlis = pvproperty(name='MLIS',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Monitor List')
+
+    bklnk = pvproperty(name='BKLNK',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Backwards link tracking')
+
+    disp = pvproperty(name='DISP',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Disable putField')
+
+    proc = pvproperty(name='PROC',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Force Processing')
+
+    stat = pvproperty(name='STAT',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Alarm Status')
+
+    sevr = pvproperty(name='SEVR',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Alarm Severity')
+
+    amsg = pvproperty(name='AMSG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Alarm Message')
+
+    nsta = pvproperty(name='NSTA',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='New Alarm Status')
+
+    nsev = pvproperty(name='NSEV',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='New Alarm Severity')
+
+    namsg = pvproperty(name='NAMSG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='New Alarm Message')
+
+    acks = pvproperty(name='ACKS',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Alarm Ack Severity')
+
+    ackt = pvproperty(name='ACKT',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Alarm Ack Transient')
+
+    diss = pvproperty(name='DISS',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Disable Alarm Sevrty')
+
+    lcnt = pvproperty(name='LCNT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Lock Count')
+
+    pact = pvproperty(name='PACT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Record active')
+
+    putf = pvproperty(name='PUTF',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='dbPutField process')
+
+    rpro = pvproperty(name='RPRO',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Reprocess ')
+
+    asp = pvproperty(name='ASP',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Access Security Pvt')
+
+    ppn = pvproperty(name='PPN',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='pprocessNotify')
+
+    ppnr = pvproperty(name='PPNR',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='pprocessNotifyRecord')
+
+    spvt = pvproperty(name='SPVT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Scan Private')
+
+    rset = pvproperty(name='RSET',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Address of RSET')
+
+    dset = pvproperty(name='DSET',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='DSET address')
+
+    dpvt = pvproperty(name='DPVT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Device Private')
+
+    rdes = pvproperty(name='RDES',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Address of dbRecordType')
+
+    lset = pvproperty(name='LSET',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Lock Set')
+
+    prio = pvproperty(name='PRIO',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Scheduling Priority')
+
+    tpro = pvproperty(name='TPRO',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Trace Processing')
+
+    bkpt = pvproperty(name='BKPT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Break Point')
+
+    udf = pvproperty(name='UDF',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Undefined')
+
+    udfs = pvproperty(name='UDFS',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Undefined Alarm Sevrty')
+
+    time = pvproperty(name='TIME',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Time')
+
+    utag = pvproperty(name='UTAG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Time Tag')
+
+    flnk = pvproperty(name='FLNK',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Forward Process Link')
+
+    vers = pvproperty(name='VERS',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Version Number')
+
+    stte = pvproperty(name='STTE',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='State')
+
+    nprc = pvproperty(name='NPRC',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Num. Proc.')
+
+    stfg = pvproperty(name='STFG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Start Flag')
+
+    mark = pvproperty(name='MARK',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Mark')
+
+    lpro = pvproperty(name='LPRO',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Link Processing')
+
+    top = pvproperty(name='TOP',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Top of tree')
+
+    tout = pvproperty(name='TOUT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Timeout (sec)')
+
+    rpvt = pvproperty(name='RPVT',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Record Private')
+
+    val = pvproperty(name='VAL',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Return Error Code')
+
+    dir = pvproperty(name='DIR',
+                                dtype=ChannelType.ENUM,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='CAD Directive')
+
+    clid = pvproperty(name='CLID',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Client ID')
+
+    mess = pvproperty(name='MESS',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Message')
+
+    omss = pvproperty(name='OMSS',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Old Message')
+
+    outa = pvproperty(name='OUTA',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link A')
+
+    outb = pvproperty(name='OUTB',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link B')
+
+    outc = pvproperty(name='OUTC',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link C')
+
+    outd = pvproperty(name='OUTD',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link D')
+
+    oute = pvproperty(name='OUTE',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link E')
+
+    outf = pvproperty(name='OUTF',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link F')
+
+    outg = pvproperty(name='OUTG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link G')
+
+    outh = pvproperty(name='OUTH',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output Link H')
+
+    ocla = pvproperty(name='OCLA',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link A')
+
+    oclb = pvproperty(name='OCLB',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link B')
+
+    oclc = pvproperty(name='OCLC',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link C')
+
+    ocld = pvproperty(name='OCLD',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link D')
+
+    ocle = pvproperty(name='OCLE',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link E')
+
+    oclf = pvproperty(name='OCLF',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link F')
+
+    oclg = pvproperty(name='OCLG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link G')
+
+    oclh = pvproperty(name='OCLH',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Output CLID Link H')
+
+    inpa = pvproperty(name='INPA',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link A')
+
+    inpb = pvproperty(name='INPB',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link B')
+
+    inpc = pvproperty(name='INPC',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link C')
+
+    inpd = pvproperty(name='INPD',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link D')
+
+    inpe = pvproperty(name='INPE',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link E')
+
+    inpf = pvproperty(name='INPF',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link F')
+
+    inpg = pvproperty(name='INPG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link G')
+
+    inph = pvproperty(name='INPH',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Link H')
+
+    inma = pvproperty(name='INMA',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link A')
+
+    inmb = pvproperty(name='INMB',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link B')
+
+    inmc = pvproperty(name='INMC',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link C')
+
+    inmd = pvproperty(name='INMD',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link D')
+
+    inme = pvproperty(name='INME',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link E')
+
+    inmf = pvproperty(name='INMF',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link F')
+
+    inmg = pvproperty(name='INMG',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link G')
+
+    inmh = pvproperty(name='INMH',
+                                dtype=ChannelType.CHAR,
+                                max_length=40,
+                                report_as_string=True,
+                                doc='Input Msg Link H')
+
+
+
+
+class GnirsDataManagerIOC(PVGroup):
+
+
+    @pvproperty(dtype=ChannelType.STRING, doc="Name of the instrument")
+    async def instrument(self, instance):
+        return INSTRUMENT_NAME
+
+    currentLabel = pvproperty(
+            value="",
+            dtype=ChannelType.STRING,
+            doc="Label of image being processed"
+            )
+
+    lastError = pvproperty(
+            value="",
+            dtype=ChannelType.STRING,
+            doc="Last error message"
+            )
+
+    lastErrorLabel = pvproperty(
+            value="",
+            dtype=ChannelType.STRING,
+            doc="Last processed image label with errors"
+            )
+
+    lastProcessed = pvproperty(
+            value="",
+            dtype=ChannelType.STRING,
+            doc="Last processed image name"
+            )
+
+
+    queued = pvproperty(
+            value = 0,
+            doc="Number of images queued for processing"
+            )
+
+    async def push_task(self, log):
+        await wait_for(self.queued.write(self.queued.value + 1),
+                       self.append_log_string(log))
+
+    async def append_log_string(self, string):
+        current = self.log_array.value
+        while len(current) >= MAX_LOG_SIZE:
+            current = current[1:]
+        current.append(string)
+        await self.log_array.write(current)
+
+    async def done_task(self, log):
+        await wait_for(self.queued.write(self.queued.value - 1),
+                       self.append_log_string(log))
+
+
+if __name__ == '__main__':
+    ioc_options, run_options = ioc_arg_parser(
+        default_prefix='apply:',
+        desc='Run an IOC that serves the custom PVGroup.'
+    )
+
+    ioc = GnirsDataManagerIOC(**ioc_options)
+    run(ioc.pvdb, **run_options)
