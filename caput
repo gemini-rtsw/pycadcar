@@ -1,2 +1,2 @@
 #!/bin/bash
-python caput.py "$1" "$2"
+python3 caput.py "$1" "$2"
