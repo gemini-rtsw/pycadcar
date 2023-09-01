@@ -21,15 +21,13 @@ class MyIOC(PVGroup):
 
 
     def sname_funct(self):
-    	controller = libgnirsioc.controllerInterface()
-    	return controller
+        controller = libgnirsioc.controllerInterface()
+        return controller
 
 
     async def record_init(self):
         sname_ptr = self.sname_funct
         print("FUNCT PTR")
-
-#lambda : controller = libgnirsioc.controllerInterface() 
         
         await self.cadRecord.setSNAM(sname_ptr)
         self.cadRecord.car_record = self.carRecord

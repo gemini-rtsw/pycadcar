@@ -86,11 +86,11 @@ class CARRecord(PVGroup):
     @VAL.startup
     async def VAL(self, instance, async_lib):
         # This function will be called when the IOC starts up.
-        print('VAL pvproperty has started.')
+        print(f'{self.prefix}VAL pvproperty has started.')
 
     @VAL.putter
     async def VAL(self, instance, value):
-        print(f'VAL value changed to: {value}')
+        print(f'{self.prefix}VAL value changed to: {value}')
         self.state.transition(value)
-        print(f'CAR state is now: {self.state.state}')
+        print(f'{self.prefix}CAR state is now: {self.state.state}')
         return value
