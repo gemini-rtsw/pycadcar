@@ -44,5 +44,4 @@ pip install .
 ### Contributing
 Feel free to submit issues or pull requests.
 
-### License
-Your preferred license here.
+
