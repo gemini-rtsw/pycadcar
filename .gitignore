@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyo
+*.pyd
+*.so
+
+# C extensions
+*.dll
+*.dylib
+
+# Distribution / packaging
+.Python
+.build/
+*.egg-info/
+dist/
+sdist/
+*.egg
+
+# Unit test / coverage reports
+.coverage
+.tox/
+.pytest_cache/
+.cache/
+nosetests.xml
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IDE / Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+/build
