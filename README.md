@@ -1,8 +1,8 @@
-# PyCADCar
-## A Python-based CAD and CAR Record Management System
+# PyCADCAR
+## Python-based CAD and CAR Records
 
 ### Description
-This repository provides an example IOC (Input/Output Controller) with CAD (your CAD record description here) and CAR (your CAR record description here) records. The project is intended to showcase the management and automation of these records using the caproto library.
+This repository provides an example IOC (Input/Output Controller) with Apply and CAD (Command Action Directive) and CAR (Command Action Response) records. The project is intended to implement the functionality of these records using Python and the caproto library.
 
 ### Features
 - CAD and CAR record implementation
