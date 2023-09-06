@@ -20,16 +20,20 @@ python setup.py install
 \```
 
 ### Usage
+
 1. **Run the example IOC:**
-\```bash
-python examples/exampleIOC.py --list-pvs
-\```
+
+    ```bash
+    python examples/exampleIOC.py --list-pvs
+    ```
 
 2. **Execute Channel Access commands using tools:**
-\```bash
-./tools/caget <PV_NAME>
-./tools/caput <PV_NAME> <VALUE>
-\```
+
+    ```bash
+    ./tools/caget <PV_NAME>
+    ./tools/caput <PV_NAME> <VALUE>
+    ```
+
 
 ### Structure
 - `examples/`: Contains example IOC Python script
