@@ -170,8 +170,7 @@ class CADRecord(PVGroup):
     # Other CAD Fields
     CLID = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="CLID")
     OMSS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="OMSS")
-    #MARK stores the state machine state in a PV
-    MARK = pvproperty(value=0, dtype=caproto.ChannelType.INT, name="MARK")
+    MARK = pvproperty(value=0, dtype=caproto.ChannelType.INT, name="MARK") #MARK stores the state machine state in a PV
     SNAM = pvproperty(value=0, dtype=caproto.ChannelType.STRING, name="SNAM")
 
 

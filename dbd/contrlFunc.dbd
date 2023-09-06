@@ -1,3 +1,0 @@
-registrar(dcControlRegistrar)
-registrar(dcHealthRegistrar)
-registrar(dcControlRegistrar2)
