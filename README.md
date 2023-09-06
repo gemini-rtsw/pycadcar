@@ -15,9 +15,10 @@ This repository provides an example IOC (Input/Output Controller) with Apply and
 
 ### Installation
 Clone the repository and navigate to its root directory. Run:
-\```bash
+
+```bash
 python setup.py install
-\```
+```
 
 ### Usage
 
