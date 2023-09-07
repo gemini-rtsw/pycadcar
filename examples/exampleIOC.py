@@ -1,8 +1,13 @@
 import caproto
 from caproto.server import pvproperty, SubGroup, PVGroup, ioc_arg_parser, run
-from applyrecord import ApplyRecord
-from cadrecord import CADRecord
-from carrecord import CARRecord
+
+import sys
+sys.path.insert(0, '../')  # import locally for testing
+    
+from pygeminirec.applyrecord import ApplyRecord
+from pygeminirec.cadrecord import CADRecord
+from pygeminirec.carrecord import CARRecord
+
 import asyncio
 
 #Run example as follows
@@ -44,6 +49,19 @@ class MyIOC(PVGroup):
     carRecord = SubGroup(CARRecord, prefix='applyCAR.')
     applyRecord = SubGroup(ApplyRecord, prefix='apply.')
 
+    async def record_init(self):
+
+        #Link CAD record to CAR record
+        self.cadRecord1.car_record = self.carRecord
+        self.cadRecord2.car_record = self.carRecord
+        self.cadRecord3.car_record = self.carRecord
+        self.cadRecord4.car_record = self.carRecord
+
+        #Link Apply record to CAD records
+        self.applyRecord.sub_records = [self.cadRecord1, self.cadRecord2, self.cadRecord3, self.cadRecord4]
+
+    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -56,13 +74,6 @@ class MyIOC(PVGroup):
         return None
 
 
-    async def record_init(self):
-
-        #Link CAD record to CAR record
-        self.cadRecord1.car_record = self.carRecord
-
-        #Link Apply record to CAD record
-        self.applyRecord.cad_records = [self.cadRecord1, self.cadRecord2, self.cadRecord3, self.cadRecord4]
 
 if __name__ == '__main__':
     ioc_options, run_options = ioc_arg_parser(

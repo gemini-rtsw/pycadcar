@@ -1,6 +1,13 @@
 from caproto.server import pvproperty, PVGroup, ioc_arg_parser, run
 import caproto
 
+import sys
+
+
+#try import locally for testing
+sys.path.insert(0, '../')
+from pygeminirec.applyrecord import ApplyRecord
+
 
 
 # State Table
@@ -58,7 +65,7 @@ class CADStateMachine:
 
 
 
-class CADRecord(PVGroup):
+class CADRecord(ApplyRecord):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
     def __init__(self, *args, **kwargs):
@@ -107,27 +114,11 @@ class CADRecord(PVGroup):
                 await self.start()
 
 
+    # ------------------  DIR -------------------------
+    async def DIRputter(self, instance, value):
+        await super().DIRputter(instance, value)
 
-    async def setSNAM(self, funct_ptr):
-        self.state.funct_ptr = funct_ptr
-        await self.SNAM.write(funct_ptr.__name__)
-
-    # DIR -------------------------
-    DIR = pvproperty(
-        value='MARK',
-        dtype=caproto.ChannelType.ENUM,
-        enum_strings=['MARK', 'CLEAR', 'PRESET', 'START', 'STOP'],
-        name="DIR"
-    )
-
-    @DIR.startup
-    async def DIR(self, instance, async_lib):
-        # This function will be called when the IOC starts up.
-        print('DIR pvproperty has started.')
-
-    @DIR.putter
-    async def DIR(self, instance, value):
-        print(f'{self.prefix}DIR value changed to: {value}')
+        print(f'{self.prefix}DIR value changed to BLAH: {value}')
         await self.state.transition(value)
 
         await self.MARK.write(self.state.state)
@@ -135,16 +126,10 @@ class CADRecord(PVGroup):
         print(f'{self.prefix}CAD state is now: {self.state.state}')
         return value
 
-    # VAL  ------------------------- 
-    VAL = pvproperty(
-        value='IDLE',
-        dtype=caproto.ChannelType.ENUM,
-        enum_strings=['IDLE', 'PAUSED', 'BUSY', 'ERROR'],
-        name="VAL"
-    )
+    # ------------------  VAL  ------------------------- 
+    async def VALputter(self, instance, value):
+        await super().VALputter(instance, value)
 
-    @VAL.putter
-    async def VAL(self, instance, value):
         print(f'{self.prefix}VAL value changed to: {value}')
 
         if (self.car_record != None):
@@ -153,11 +138,10 @@ class CADRecord(PVGroup):
         return value
     
 
-    # MESS  ------------------------- 
-    MESS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="MESS")
+    # ------------------  MESS  ------------------------- 
+    async def MESSputter(self, instance, value):
+        await super().MESSputter(instance, value)
 
-    @MESS.putter
-    async def MESS(self, instance, value):
         print(f'{self.prefix}MESS value changed to: {value}')
         await self.OMSS.write(self.MESS.value)
 
@@ -166,12 +150,17 @@ class CADRecord(PVGroup):
 
         return value
     
+    # ------------------  SNAM -------------------------
+    SNAM = pvproperty(value=0, dtype=caproto.ChannelType.STRING, name="SNAM")
+
+    async def setSNAM(self, funct_ptr):
+        self.state.funct_ptr = funct_ptr
+        await self.SNAM.write(funct_ptr.__name__)
+
 
     # Other CAD Fields
-    CLID = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="CLID")
     OMSS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="OMSS")
     MARK = pvproperty(value=0, dtype=caproto.ChannelType.INT, name="MARK") #MARK stores the state machine state in a PV
-    SNAM = pvproperty(value=0, dtype=caproto.ChannelType.STRING, name="SNAM")
 
 
     

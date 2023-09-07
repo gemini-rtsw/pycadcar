@@ -8,8 +8,10 @@ class ApplyRecord(PVGroup):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cad_records = []
+        self.sub_records = []
 
+
+    # ------------------ DIR  ------------------------- 
     DIR = pvproperty(
         value='MARK',
         dtype=caproto.ChannelType.ENUM,
@@ -19,38 +21,80 @@ class ApplyRecord(PVGroup):
 
     @DIR.putter
     async def DIR(self, instance, value):
+        await self.DIRputter(instance, value)
+
+    async def DIRputter(self, instance, value):
+        print("TESTING DIR")
+        print(f'{self.prefix} Processing ...')
+        print("Subs: ", len(self.sub_records))
         #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
         if value == 'START':
-            await self.set_cad_dir('PRESET ')
+            await self.setSubRecordDir('PRESET')
 
-        await self.set_cad_dir(value)
+        await self.setSubRecordDir(value)
         return value
-
-    VAL = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="VAL")
-
-    MESS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="MESS")
-
-    async def set_cad_dir(self, value):
+    
+    async def setSubRecordDir(self, value):
         """Set the DIR value for all cadRecord instances to match applyRecord's DIR."""
-        for cad_record in self.cad_records:
-            print(f'{cad_record.prefix} Processing ...')
+        for sub_record in self.sub_records:
+            print(f'{sub_record.prefix} Processing ...')
             
-            await cad_record.DIR.write(value)
+            await sub_record.DIR.write(value)
 
-            data = cad_record.VAL.value
+            # results
+            ret_val  = sub_record.VAL.value
+            ret_mess = sub_record.MESS.value
 
-            print(f'{cad_record.prefix} CAD VAL: {str(data)}')
+            print(f'{sub_record.prefix} CAD VAL: {str(ret_val)}')
 
-            if data == 'ERROR':
-                print("Error processing cad record: ", cad_record.prefix)
-                await self.VAL.write(1)
-                await self.MESS.write(cad_record.MESS.value)
-                break
+            await self.VAL.write(ret_val)
+            await self.MESS.write(ret_mess)
+            
+            if sub_record.VAL.value == 'ERROR':
+                print("Error processing cad record: " + sub_record.prefix)
+                print("VAL: " + ret_val)
+                print("MESS: " + ret_mess)
+                break    
 
-            # ADD PROPER PROCESSING 
-            # Check cad VAL for error
-            # write error to MESS
-            # stop processing
+
+    # ------------------ VAL  ------------------------- 
+    VAL = pvproperty(
+        value='IDLE',
+        dtype=caproto.ChannelType.ENUM,
+        enum_strings=['IDLE', 'PAUSED', 'BUSY', 'ERROR'],
+        name="VAL"
+    )
+
+    @VAL.putter
+    async def VAL(self, instance, value):
+        await self.VALputter(instance, value)
+
+    async def VALputter(self, instance, value):
+        print(f'{self.prefix}VAL value changed to: {value}')
+
+
+    # ------------------ CLID  ------------------------- 
+    CLID = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="CLID")
+    @CLID.putter
+    async def CLID(self, instance, value):
+        await self.CLIDputter(instance, value)
+
+    async def CLIDputter(self, instance, value):
+        print(f'{self.prefix}CLID value changed to: {value}')
+
+    # ------------------ MESS  ------------------------- 
+    MESS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="MESS")
+    @MESS.putter
+    async def MESS(self, instance, value):
+        await self.MESSputter(instance, value)
+
+    async def MESSputter(self, instance, value):
+        print(f'{self.prefix}MESS value changed to: {value}')
+
+
+
+
+
 
 
 
