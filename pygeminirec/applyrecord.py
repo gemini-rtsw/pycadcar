@@ -24,7 +24,6 @@ class ApplyRecord(PVGroup):
         await self.DIRputter(instance, value)
 
     async def DIRputter(self, instance, value):
-        print("TESTING DIR")
         print(f'{self.prefix} Processing ...')
         print("Subs: ", len(self.sub_records))
         #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.

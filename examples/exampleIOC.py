@@ -49,7 +49,11 @@ class MyIOC(PVGroup):
     carRecord = SubGroup(CARRecord, prefix='applyCAR.')
     applyRecord = SubGroup(ApplyRecord, prefix='apply.')
 
-    async def record_init(self):
+    
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 
         #Link CAD record to CAR record
         self.cadRecord1.car_record = self.carRecord
@@ -60,10 +64,6 @@ class MyIOC(PVGroup):
         #Link Apply record to CAD records
         self.applyRecord.sub_records = [self.cadRecord1, self.cadRecord2, self.cadRecord3, self.cadRecord4]
 
-    
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
     def sname_funct(self):
@@ -82,9 +82,6 @@ if __name__ == '__main__':
     )
     ioc = MyIOC(**ioc_options)
 
-    # Initialize asynchronously
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(ioc.record_init())
 
     run(ioc.pvdb, **run_options)
 

@@ -118,7 +118,7 @@ class CADRecord(ApplyRecord):
     async def DIRputter(self, instance, value):
         await super().DIRputter(instance, value)
 
-        print(f'{self.prefix}DIR value changed to BLAH: {value}')
+        print(f'{self.prefix}DIR value changed to: {value}')
         await self.state.transition(value)
 
         await self.MARK.write(self.state.state)
