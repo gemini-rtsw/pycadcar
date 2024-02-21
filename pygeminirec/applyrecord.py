@@ -24,8 +24,7 @@ class ApplyRecord(PVGroup):
         await self.DIRputter(instance, value)
 
     async def DIRputter(self, instance, value):
-        print(f'{self.prefix} Processing ...')
-        print("Subs: ", len(self.sub_records))
+        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.sub_records]}")
         #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
         if value == 'START':
             await self.setSubRecordDir('PRESET')
@@ -58,11 +57,11 @@ class ApplyRecord(PVGroup):
 
     # ------------------ VAL  ------------------------- 
     VAL = pvproperty(
-        value='IDLE',
-        dtype=caproto.ChannelType.ENUM,
-        enum_strings=['IDLE', 'PAUSED', 'BUSY', 'ERROR'],
+        value=0,  # Assuming 0 as the default integer value
+        dtype=caproto.ChannelType.INT,
         name="VAL"
     )
+
 
     @VAL.putter
     async def VAL(self, instance, value):
