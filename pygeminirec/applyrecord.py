@@ -58,7 +58,7 @@ class ApplyRecord(PVGroup):
     # ------------------ VAL  ------------------------- 
     VAL = pvproperty(
         value=0,  # Assuming 0 as the default integer value
-        dtype=caproto.ChannelType.INT,
+        dtype=caproto.ChannelType.LONG,
         name="VAL"
     )
 
