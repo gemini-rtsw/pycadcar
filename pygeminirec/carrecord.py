@@ -72,18 +72,18 @@ class CARRecord(PVGroup):
 
         self.state.state = 'IDLE'
 
-#    VAL = pvproperty(
-#        value='IDLE',
-#        dtype=caproto.ChannelType.ENUM,
-#        enum_strings=['UNAVAILABLE','IDLE', 'PAUSED', 'BUSY', 'ERROR'],
-#        name="VAL"
-#    )
-        
     VAL = pvproperty(
-        value=0,  # Assuming 0 as the default integer value
-        dtype=caproto.ChannelType.LONG,
+        value='IDLE',
+        dtype=caproto.ChannelType.ENUM,
+        enum_strings=['IDLE', 'PAUSED', 'BUSY', 'ERR'],
         name="VAL"
     )
+        
+#    VAL = pvproperty(
+#        value=0,  # Assuming 0 as the default integer value
+#        dtype=caproto.ChannelType.LONG,
+#        name="VAL"
+#    )
 
     CLID = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="CLID")
 
