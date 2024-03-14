@@ -7,6 +7,7 @@ import sys
 #try import locally for testing
 sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
+from pygeminirec.applyrecord import Result
 
 
 
@@ -78,27 +79,36 @@ class CADRecord(ApplyRecord):
 
 
     async def mark(self):
-        print("mark")
+        print("MARK")
+        self.setSuccess("MARK Successful")
 
     async def stop(self):
-        print("stop")
+        print("STOP")
+        self.setSuccess("STOP Successful")
 
     async def clear(self):
-        print("clear")
+        print("CLEAR")
+        self.setSuccess("CLEAR Successful")
 
     async def preset(self):
         print("preset")
+        self.setSuccess("PRESET Successful")
 
     async def start(self):
-        print("start")
+        print("START")
+        self.setSuccess("START Successful")
 
     async def setError(self, message):
         await self.MESS.write(message)
-        await self.VAL.write('ERROR')
+        await self.VAL.write(Result.ERROR)
 
     async def clearError(self):
         await self.MESS.write('')
-        await self.VAL.write('IDLE')
+        await self.VAL.write(Result.SUCCESS)
+
+    async def setSuccess(self, message):
+        await self.MESS.write(message)
+        await self.VAL.write(Result.SUCCESS)
 
 
     async def default_subroutine(self, event):

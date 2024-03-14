@@ -2,7 +2,34 @@ from caproto.server import pvproperty, PVGroup
 import caproto
 
 
+from enum import Enum
 
+class Result(Enum):
+    ERROR = 0
+    SUCCESS = 1
+
+    # This implements Java ACM code as of 2024 March
+    #  
+    # Gemini record reference manual implies 0 is success 
+    # Gemini Record Ref - Apply.VAL - This is the return value from the input links. If any link returns a non-zero, processing stops and the last value is returned.
+    # 
+    # Java ACM README - 1. If any CAD record returns an error value, the apply record changes apply.VAL to an error value (negatives values are error codes) and puts the error message from the CAD record in apply.MESS.
+    #
+    # code says this: (VAL <= 0 is error)
+    #       public State onApplyValChange(Integer val, Instant timestamp) {
+    #            if(val > 0) {
+    #                if(clid.isPresent()) return this;
+    #                else {
+    #                    boolean ended = carClid.map(y -> commandState.checkCompletion(timestamp, val, y, cm)).orElse(false);
+    #                    if (ended) return IdleState;
+    #                    else return new BusyState(cm, commandState, Optional.of(val), carClid);
+    #                }
+    #            } else {
+    #                failCommandWithApplyError(cm);
+    #                return IdleState;
+    #            }
+    #        }
+    
 class ApplyRecord(PVGroup):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
@@ -33,7 +60,11 @@ class ApplyRecord(PVGroup):
         return value
     
     async def setSubRecordDir(self, value):
+
         """Set the DIR value for all cadRecord instances to match applyRecord's DIR."""
+
+        self.VAL.value = Result.ERROR
+
         for sub_record in self.sub_records:
             print(f'{sub_record.prefix} Processing ...')
             
@@ -48,7 +79,7 @@ class ApplyRecord(PVGroup):
             await self.VAL.write(ret_val)
             await self.MESS.write(ret_mess)
             
-            if sub_record.VAL.value == 'ERROR':
+            if sub_record.VAL.value <= 0:
                 print("Error processing cad record: " + sub_record.prefix)
                 print("VAL: " + ret_val)
                 print("MESS: " + ret_mess)
