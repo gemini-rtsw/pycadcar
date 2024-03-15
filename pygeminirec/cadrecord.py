@@ -42,6 +42,7 @@ class CADStateMachine:
         self.funct_ptr = None
 
     async def transition(self, event):
+        print("CAD state transition and subroutine execution")
         if self.state == 0:
             if event == 'MARK':
                 self.state = 1
