@@ -63,7 +63,8 @@ class ApplyRecord(PVGroup):
 
         """Set the DIR value for all cadRecord instances to match applyRecord's DIR."""
 
-        self.VAL.value = Result.ERROR
+        ret_val  = Result.ERROR
+        ret_mess = "ERROR Trying to set DIR in subrecords"
 
         for sub_record in self.sub_records:
             print(f'{sub_record.prefix} Processing ...')
@@ -74,16 +75,16 @@ class ApplyRecord(PVGroup):
             ret_val  = sub_record.VAL.value
             ret_mess = sub_record.MESS.value
 
-            print(f'{sub_record.prefix} CAD VAL: {str(ret_val)}')
-
-            await self.VAL.write(ret_val)
-            await self.MESS.write(ret_mess)
+            print(f'{sub_record.prefix} VAL: {str(ret_val)}')
             
             if sub_record.VAL.value <= 0:
                 print("Error processing cad record: " + sub_record.prefix)
                 print("VAL: " + ret_val)
                 print("MESS: " + ret_mess)
                 break    
+
+        await self.VAL.write(ret_val)
+        await self.MESS.write(ret_mess)
 
 
     # ------------------ VAL  ------------------------- 
