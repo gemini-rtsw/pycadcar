@@ -2,9 +2,9 @@ from caproto.server import pvproperty, PVGroup
 import caproto
 
 
-from enum import Enum
+from enum import IntEnum
 
-class Result(Enum):
+class Result(IntEnum):
     ERROR = 0
     SUCCESS = 1
 
@@ -59,16 +59,14 @@ class ApplyRecord(PVGroup):
         await self.setSubRecordDir(value)
         return value
     
+
     async def setSubRecordDir(self, value):
 
         """Set the DIR value for all cadRecord instances to match applyRecord's DIR."""
 
-        ret_val  = Result.ERROR
-        ret_mess = "ERROR Trying to set DIR in subrecords"
-
         for sub_record in self.sub_records:
             print(f'{sub_record.prefix} Processing ...')
-            
+
             await sub_record.DIR.write(value)
 
             # results
@@ -76,15 +74,17 @@ class ApplyRecord(PVGroup):
             ret_mess = sub_record.MESS.value
 
             print(f'{sub_record.prefix} VAL: {str(ret_val)}')
-            
-            if sub_record.VAL.value <= 0:
-                print("Error processing cad record: " + sub_record.prefix)
-                print("VAL: " + ret_val)
-                print("MESS: " + ret_mess)
-                break    
 
-        await self.VAL.write(ret_val)
-        await self.MESS.write(ret_mess)
+            if sub_record.VAL.value <= 0:
+                print(f"Error processing cad record: {sub_record.prefix}")
+                break  
+
+        # only set VAL and MESS if there was a return from a sub record
+        if (len(self.sub_records) > 0):
+            print(f"VAL: {ret_val}")
+            print(f"MESS: {ret_mess}")
+            await self.VAL.write(ret_val)
+            await self.MESS.write(ret_mess)
 
 
     # ------------------ VAL  ------------------------- 
