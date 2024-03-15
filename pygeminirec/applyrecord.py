@@ -79,7 +79,7 @@ class ApplyRecord(PVGroup):
         """Set the DIR value for all cadRecord instances to match applyRecord's DIR."""
 
         for sub_record in self.sub_records:
-            print(f' {self.prefix} Processing {sub_record.prefix} ...')
+            print(f'{self.prefix} Processing {sub_record.prefix} ...')
 
             await sub_record.DIR.write(value)
 
@@ -103,7 +103,7 @@ class ApplyRecord(PVGroup):
 
     # ------------------ VAL  ------------------------- 
     VAL = pvproperty(
-        value=0,  # Assuming 0 as the default integer value
+        value=Result.SUCCESS,  # Assuming 0 as the default integer value
         dtype=caproto.ChannelType.LONG,
         name="VAL"
     )
@@ -127,7 +127,7 @@ class ApplyRecord(PVGroup):
         print(f'{self.prefix}CLID value changed to: {value}')
 
     # ------------------ MESS  ------------------------- 
-    MESS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="MESS")
+    MESS = pvproperty(value='Initialized', dtype=caproto.ChannelType.STRING, name="MESS")
     @MESS.putter
     async def MESS(self, instance, value):
         await self.MESSputter(instance, value)

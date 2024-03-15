@@ -42,23 +42,31 @@ class CADStateMachine:
         self.funct_ptr = None
 
     async def transition(self, event):
-        print("CAD state transition and subroutine execution")
+        print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
         if self.state == 0:
+            print("state 0")
             if event == 'MARK':
+                print("MARK")
                 self.state = 1
                 await self.funct_ptr(event)
         elif self.state == 1:
+            print("state 0")
             if event == 'STOP' or event == 'CLEAR':
+                print("STOP or CLEAR")
                 self.state = 0
                 await self.funct_ptr(event)
             elif event == 'START' or event == 'PRESET':
+                print("START or PRESET")
                 self.state = 2
                 await self.funct_ptr(event)
         elif self.state == 2:
+            print("state 0")
             if event == 'CLEAR' or event == 'START' or event == 'STOP':
+                print("CLEAR or START or STOP")
                 self.state = 0
                 await self.funct_ptr(event)
             elif event == 'MARK':
+                print("MARK")
                 self.state = 1
                 await self.funct_ptr(event)
 
@@ -77,6 +85,7 @@ class CADRecord(ApplyRecord):
         self.state.funct_ptr = self.default_subroutine
 
         self.car_record = None
+        self.setSuccess("Initialized CAD")
 
 
     async def mark(self):
