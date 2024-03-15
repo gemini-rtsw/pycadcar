@@ -92,7 +92,7 @@ class CADRecord(ApplyRecord):
         self.setSuccess("CLEAR Successful")
 
     async def preset(self):
-        print("preset")
+        print("PRESET")
         self.setSuccess("PRESET Successful")
 
     async def start(self):

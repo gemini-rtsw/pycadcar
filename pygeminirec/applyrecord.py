@@ -79,7 +79,7 @@ class ApplyRecord(PVGroup):
         """Set the DIR value for all cadRecord instances to match applyRecord's DIR."""
 
         for sub_record in self.sub_records:
-            print(f'{sub_record.prefix} Processing ...')
+            print(f' {self.prefix} Processing {sub_record.prefix} ...')
 
             await sub_record.DIR.write(value)
 
