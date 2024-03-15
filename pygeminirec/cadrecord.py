@@ -98,19 +98,6 @@ class CADRecord(ApplyRecord):
         print("START")
         self.setSuccess("START Successful")
 
-    async def setError(self, message):
-        await self.MESS.write(message)
-        await self.VAL.write(Result.ERROR)
-
-    async def clearError(self):
-        await self.MESS.write('')
-        await self.VAL.write(Result.SUCCESS)
-
-    async def setSuccess(self, message):
-        await self.MESS.write(message)
-        await self.VAL.write(Result.SUCCESS)
-
-
     async def default_subroutine(self, event):
             if event == 'MARK':
                 await self.mark()

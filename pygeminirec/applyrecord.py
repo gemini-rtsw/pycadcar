@@ -59,6 +59,20 @@ class ApplyRecord(PVGroup):
         await self.setSubRecordDir(value)
         return value
     
+    async def setError(self, message):
+        print(f"Setting {self.prefix}MESS = {message}")
+        await self.MESS.write(message)
+        await self.VAL.write(Result.ERROR)
+
+    async def clearError(self):
+        print(f"Setting {self.prefix}MESS = {message}")
+        await self.MESS.write('')
+        await self.VAL.write(Result.SUCCESS)
+
+    async def setSuccess(self, message):
+        print(f"Setting {self.prefix}MESS = {message}")
+        await self.MESS.write(message)
+        await self.VAL.write(Result.SUCCESS)
 
     async def setSubRecordDir(self, value):
 
