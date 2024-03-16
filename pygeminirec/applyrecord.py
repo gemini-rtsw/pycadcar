@@ -89,6 +89,15 @@ class CARState:
 #   [software@hbftelops-ld3 ~]$
 
 
+#[software@hbftelops-ld3 ~]$ caput tgnirs:dc:applyC.CLID 1 && caput tgnirs:dc:applyC.VAL 2 && caput tgnirs:dc:applyC.VAL 0
+#Old : tgnirs:dc:applyC.CLID          1
+#New : tgnirs:dc:applyC.CLID          1
+#Old : tgnirs:dc:applyC.VAL           BUSY
+#New : tgnirs:dc:applyC.VAL           BUSY
+#Old : tgnirs:dc:applyC.VAL           BUSY
+#New : tgnirs:dc:applyC.VAL           IDLE
+
+
 class ApplyRecord(PVGroup):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
@@ -121,13 +130,17 @@ class ApplyRecord(PVGroup):
         await self.setSubRecordDir(value)
         return value
     
+
+
+
+
     async def setError(self, message):
         print(f"Setting {self.prefix}MESS = {message}")
         await self.MESS.write(message)
         await self.VAL.write(Result.ERROR)
 
     async def clearError(self):
-        print(f"Setting {self.prefix}MESS = {message}")
+        print(f"Setting {self.prefix}MESS = none")
         await self.MESS.write('')
         await self.VAL.write(Result.SUCCESS)
 
@@ -136,15 +149,27 @@ class ApplyRecord(PVGroup):
         await self.MESS.write(message)
         await self.VAL.write(Result.SUCCESS)
         if (self.car_record != None):
-            print(f'Updating {self.car_record.prefix}VAL')
+            print(f'Updating {self.car_record.prefix}VAL to IDLE')
             await self.car_record.VAL.write(CARState.IDLE)
+
+
+    async def setBusy(self):
+        print(f"Setting {self.prefix}MESS = none")
+        await self.MESS.write('')
+        await self.VAL.write(Result.SUCCESS)
+
+        if (self.car_record != None):
+            print(f'Updating {self.car_record.prefix}VAL to BUSY')
+            await self.car_record.CLID.write(self.VAL.value)            
+            await self.car_record.VAL.write(CARState.BUSY)            
+
 
     async def setSubRecordDir(self, value):
 
         # Set CAR record to BUSY
         if (self.car_record != None):
             print(f'Updating {self.car_record.prefix}VAL')
-            await self.car_record.VAL.write(CARState.BUSY)
+            await self.setBusy()
 
         #Set the DIR value for all cadRecord instances to match applyRecord's DIR
             
@@ -154,7 +179,7 @@ class ApplyRecord(PVGroup):
             print(f'{self.prefix} Processing {sub_record.prefix} ...')
 
             # a CAD record will process if MARKed or NOT in state 0
-            if (sub_record.DIR.value == 'MARK' or sub_record.state > 0):
+            if (sub_record.DIR.value == 'MARK' or sub_record.state_machine.state > 0):
                 print(f"CAD {sub_record.prefix} will process")
                 processedCAD = True
 
@@ -179,7 +204,7 @@ class ApplyRecord(PVGroup):
 
         # if no CADs process we need to set the success manually
         if processedCAD == False:
-            self.setSuccess("Command Succeeded")
+            await self.setSuccess("Command Succeeded")
 
 
 

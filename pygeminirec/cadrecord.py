@@ -81,9 +81,9 @@ class CADRecord(ApplyRecord):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.state = CADStateMachine()
-        self.state.state = 0
-        self.state.funct_ptr = self.default_subroutine
+        self.state_machine = CADStateMachine()
+        self.state_machine.state = 0
+        self.state_machine.funct_ptr = self.default_subroutine
 
         self.setSuccess("Initialized CAD")
 
@@ -135,11 +135,11 @@ class CADRecord(ApplyRecord):
 
         # transition to next state and posibly execute subroutine for state
         print(f'{self.prefix}DIR value changed to: {value}')
-        await self.state.transition(value)
+        await self.state_machine.transition(value)
 
-        await self.MARK.write(self.state.state)
+        await self.MARK.write(self.state_machine.state)
 
-        print(f'{self.prefix}CAD state is now: {self.state.state}')
+        print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
 
         await super().DIRputter(instance, value)
 
@@ -173,7 +173,7 @@ class CADRecord(ApplyRecord):
     SNAM = pvproperty(value=0, dtype=caproto.ChannelType.STRING, name="SNAM")
 
     async def setSNAM(self, funct_ptr):
-        self.state.funct_ptr = funct_ptr
+        self.state_machine.funct_ptr = funct_ptr
         await self.SNAM.write(funct_ptr.__name__)
 
 
