@@ -1,6 +1,10 @@
 from caproto.server import pvproperty, PVGroup, ioc_arg_parser, run
 import caproto
 
+#try import locally for testing
+sys.path.insert(0, '../')
+from pygeminirec.applyrecord import ApplyRecord
+from pygeminirec.applyrecord import CARState
 
 
 # State Table
@@ -26,13 +30,14 @@ import caproto
 #see figure 4 in Gemini Record Reference Manual
 
 # State Machine
+"""
 class CARStateMachine:
     def __init__(self):
         self.state = 'UNAVAILABLE'
 
     def transition(self, event):
         if self.state == 'UNAVAILABLE':
-            if event == 'IDLE':
+            if event == IDLE':
                 self.state = 'IDLE'
         elif self.state == 'IDLE':
             if event == 'BUSY':
@@ -58,7 +63,7 @@ class CARStateMachine:
                 self.state = 'IDLE'
 
         return self.state
-
+"""
 
 
 
@@ -68,14 +73,14 @@ class CARRecord(PVGroup):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.state = CARStateMachine()
+#        self.state = CARStateMachine()
 
-        self.state.state = 'IDLE'
+#        self.state.state = 'IDLE'
 
     VAL = pvproperty(
-        value='IDLE',
+        value=CARState.IDLE,
         dtype=caproto.ChannelType.ENUM,
-        enum_strings=['IDLE', 'PAUSED', 'BUSY', 'ERR'],
+        enum_strings=[CARState.IDLE, CARState.PAUSED, CARState.BUSY, CARState.ERR],
         name="VAL"
     )
         
@@ -97,6 +102,6 @@ class CARRecord(PVGroup):
     @VAL.putter
     async def VAL(self, instance, value):
         print(f'{self.prefix}VAL value changed to: {value}')
-        self.state.transition(value)
-        print(f'{self.prefix}CAR state is now: {self.state.state}')
+        #self.state.transition(value)
+        #print(f'{self.prefix}CAR state is now: {self.state.state}')
         return value

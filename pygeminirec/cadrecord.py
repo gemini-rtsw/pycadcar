@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
 from pygeminirec.applyrecord import Result
+from pygeminirec.applyrecord import CARState
 
 
 
@@ -84,10 +85,12 @@ class CADRecord(ApplyRecord):
         self.state.state = 0
         self.state.funct_ptr = self.default_subroutine
 
-        self.car_record = None
         self.setSuccess("Initialized CAD")
 
 
+# Override these functions to implement CAD actions
+# note: they MUST call setSuccess or setError
+        
     async def mark(self):
         print("MARK")
         self.setSuccess("MARK Successful")
@@ -124,6 +127,13 @@ class CADRecord(ApplyRecord):
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
 
+        # CAR is set busy while we are working
+        if (self.car_record != None):
+            print(f"Set {self.car_record}VAL=BUSY")
+            print(f'Updating {self.car_record.prefix}VAL')
+            await self.car_record.VAL.write(CARState.BUSY)
+
+        # transition to next state and posibly execute subroutine for state
         print(f'{self.prefix}DIR value changed to: {value}')
         await self.state.transition(value)
 
