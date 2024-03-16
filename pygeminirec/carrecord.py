@@ -1,5 +1,6 @@
 from caproto.server import pvproperty, PVGroup, ioc_arg_parser, run
 import caproto
+import sys
 
 #try import locally for testing
 sys.path.insert(0, '../')
@@ -80,7 +81,7 @@ class CARRecord(PVGroup):
     VAL = pvproperty(
         value=CARState.IDLE,
         dtype=caproto.ChannelType.ENUM,
-        enum_strings=[CARState.IDLE, CARState.PAUSED, CARState.BUSY, CARState.ERR],
+        enum_strings=[str(member.value) for member in CARState],
         name="VAL"
     )
         

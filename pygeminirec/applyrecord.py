@@ -2,8 +2,8 @@ from caproto.server import pvproperty, PVGroup
 import caproto
 
 
-from enum import IntEnum
-from enum import StringEnum
+from enum import IntEnum, Enum
+
 
 # Apply and CAD VALs - other systems count - not sure if this is a problem
 class Result(IntEnum):
@@ -11,11 +11,17 @@ class Result(IntEnum):
     SUCCESS = 1
 
 
+class StringEnum(Enum):
+    def __new__(cls, value, *args):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+
 class CARState(StringEnum):
-    IDLE=0
-    PAUSED=1
-    BUSY=2
-    ERR=3
+    IDLE = "IDLE"
+    PAUSED = "PAUSED"
+    BUSY = "BUSY"
+    ERR = "ERR"
 
 
 
@@ -156,6 +162,7 @@ class ApplyRecord(PVGroup):
 
             # a CAD record will process if MARKed or NOT in state 0
             if (sub_record.DIR.value == 'MARK' or sub_record.state > 0):
+                print(f"CAD {sub_record.prefix} will process")
                 processedCAD = True
 
             await sub_record.DIR.write(value)
@@ -177,7 +184,7 @@ class ApplyRecord(PVGroup):
             await self.VAL.write(ret_val)
             await self.MESS.write(ret_mess)
 
-        # if no CADs executed we need to set the success manually
+        # if no CADs process we need to set the success manually
         if processedCAD == False:
             self.setSuccess("Command Succeeded")
 
