@@ -10,14 +10,7 @@ class Result(IntEnum):
     ERROR = 0
     SUCCESS = 1
 
-
-class StringEnum(Enum):
-    def __new__(cls, value, *args):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        return obj
-
-class CARState(StringEnum):
+class CARState:
     IDLE = "IDLE"
     PAUSED = "PAUSED"
     BUSY = "BUSY"

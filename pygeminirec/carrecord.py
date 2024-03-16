@@ -81,7 +81,7 @@ class CARRecord(PVGroup):
     VAL = pvproperty(
         value=CARState.IDLE,
         dtype=caproto.ChannelType.ENUM,
-        enum_strings=[str(member.value) for member in CARState],
+        enum_strings=[CARState.IDLE, CARState.PAUSED, CARState.BUSY, CARState.ERR],
         name="VAL"
     )
         
