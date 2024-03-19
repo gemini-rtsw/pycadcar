@@ -151,8 +151,8 @@ class CADRecord(ApplyRecord):
 
         print(f'{self.prefix}VAL value changed to: {value}')
 
-        if (self.car_record != None):
-            await self.car_record.VAL.write(value)
+#        if (self.car_record != None):
+#            await self.car_record.VAL.write(value)
 
         return value
     

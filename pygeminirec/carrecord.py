@@ -32,6 +32,11 @@ from pygeminirec.applyrecord import CARState
 
 # State Machine
 """
+State machine not implemented. The documentation doesn't match the 
+GNIRS implementation. For example there is not UAVAILABLE. Adding it 
+causes Enum mismatch. The requirements of Seqexec are simple enough that
+the state machine is not needed. States are handled manually.
+
 class CARStateMachine:
     def __init__(self):
         self.state = 'UNAVAILABLE'
@@ -74,6 +79,9 @@ class CARRecord(PVGroup):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.car_record = None # cascading CAR records
+
 #        self.state = CARStateMachine()
 
 #        self.state.state = 'IDLE'
@@ -92,6 +100,17 @@ class CARRecord(PVGroup):
 #    )
 
     CLID = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="CLID")
+    @CLID.putter
+    async def CLID(self, instance, value):
+        await self.CLIDputter(instance, value)
+
+    async def CLIDputter(self, instance, value):
+        print(f'{self.prefix}CLID value changed to: {value}')
+
+        if (self.car_record != None):
+            print(f'Updating {self.car_record.prefix}CLID')
+            await self.car_record.VAL.write(value)
+
 
     OMSS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="OMSS")
 
