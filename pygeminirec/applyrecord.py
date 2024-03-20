@@ -114,7 +114,7 @@ class ApplyRecord(PVGroup):
         return self.car_record != None
     
     async def update_car(self, car_state, message, clid):
-        if (self.has_car_record()  and not self.has_sub_records()):
+        if (self.has_car_record()):
             print(f'Updating {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
             await self.car_record.VAL.write(car_state)
             await self.car_record.CLID.write(clid)
