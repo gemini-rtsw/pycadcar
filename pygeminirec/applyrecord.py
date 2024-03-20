@@ -104,8 +104,21 @@ class ApplyRecord(PVGroup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sub_records = []
-
         self.car_record = None
+
+
+    def has_sub_records(self):
+        return len(self.sub_records) > 0
+    
+    def has_car_record(self):
+        return self.car_record != None
+    
+    async def update_car(self, car_state, message, clid):
+        if (self.has_car_record()  and not self.has_sub_records()):
+            print(f'Updating {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
+            await self.car_record.VAL.write(car_state)
+            await self.car_record.CLID.write(clid)
+            await self.car_record.OMSS.write(message)
 
 
 
@@ -139,37 +152,50 @@ class ApplyRecord(PVGroup):
         await self.MESS.write(message)
         await self.VAL.write(Result.ERROR)
 
-    async def clearError(self):
+        self.update_car(CARState.ERR, message, self.CLID.value)
+
+
+    async def clearError(self, message = ''):
         print(f"Setting {self.prefix}MESS = none")
         await self.MESS.write('')
         await self.VAL.write(Result.SUCCESS)
 
-    async def setSuccess(self, message):
+        self.update_car(CARState.IDLE, message, self.CLID.value)
+
+
+    async def setSuccess(self, message = "Directive State Success"):
         print(f"Setting {self.prefix}MESS = {message}")
         await self.MESS.write(message)
         await self.VAL.write(Result.SUCCESS)
-        if (self.car_record != None):
-            print(f'Updating {self.car_record.prefix}VAL to IDLE')
-            await self.car_record.VAL.write(CARState.IDLE)
+
+        self.update_car(CARState.IDLE, message, self.CLID.value)
 
 
-    async def setBusy(self):
-        print(f"Setting {self.prefix}MESS = none")
-        await self.MESS.write('')
+    async def setBusy(self, message = "Directive State Busy"):
+        print(f"Setting {self.prefix}MESS = {message}")
+        await self.MESS.write(message)
         await self.VAL.write(Result.SUCCESS)
 
-        if (self.car_record != None):
-            print(f'Updating {self.car_record.prefix}VAL to BUSY')
-            await self.car_record.CLID.write(self.VAL.value)            
-            await self.car_record.VAL.write(CARState.BUSY)            
+        self.update_car(CARState.BUSY, message, self.CLID.value)
+
+        # update CAR
+#        if (self.has_car_record()  and not self.has_sub_records()):
+#            print(f'Updating {self.car_record.prefix}VAL to BUSY')
+#            await self.car_record.VAL.write(CARState.BUSY)
+#            await self.car_record.CLID.write(self.VAL.value)            
+            
 
 
     async def setSubRecordDir(self, value):
 
         # Set CAR record to BUSY
-        if (self.car_record != None):
-            print(f'Updating {self.car_record.prefix}VAL')
-            await self.setBusy()
+ #       if (self.car_record != None):
+ #           print(f'Updating {self.car_record.prefix}VAL')
+  #          await self.setBusy()
+
+
+        await self.setBusy()
+
 
         #Set the DIR value for all cadRecord instances to match applyRecord's DIR
             
@@ -195,18 +221,17 @@ class ApplyRecord(PVGroup):
                 print(f"Error processing cad record: {sub_record.prefix}")
                 break  
 
-        # only set VAL and MESS if there is a CAD
-        if (len(self.sub_records) > 0):
-            print(f"VAL: {ret_val}")
-            print(f"MESS: {ret_mess}")
-            await self.VAL.write(ret_val)
-            await self.MESS.write(ret_mess)
 
-        # if no CADs process we need to set the success manually
+#        # only set VAL and MESS if there is a CAD
+#        if (len(self.sub_records) > 0):
+#            print(f"VAL: {ret_val}")
+#            print(f"MESS: {ret_mess}")
+#            await self.VAL.write(ret_val)
+#            await self.MESS.write(ret_mess)
+
+#        if no CADs process we need to set the success manually
         if processedCAD == False:
             await self.setSuccess("Command Succeeded")
-
-
 
 
 
@@ -236,9 +261,9 @@ class ApplyRecord(PVGroup):
     async def CLIDputter(self, instance, value):
         print(f'{self.prefix}CLID value changed to: {value}')
 
-        if (self.car_record != None):
-            print(f'Updating {self.car_record.prefix}CLID')
-            await self.car_record.VAL.write(value)
+#        if (self.car_record != None):
+#            print(f'Updating {self.car_record.prefix}CLID')
+#            await self.car_record.CLID.write(value)
 
     # ------------------ MESS  ------------------------- 
     MESS = pvproperty(value='Initialized', dtype=caproto.ChannelType.STRING, name="MESS")
