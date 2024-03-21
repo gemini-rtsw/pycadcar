@@ -44,14 +44,16 @@ class CADStateMachine:
 
     async def transition(self, event):
         print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
+
+        self.car_processed = False
+
         if self.state == 0:
             print("state 0")
             if event == 'MARK':
                 print("MARK")
                 self.state = 1
                 await self.funct_ptr(event)
-            else: 
-                self.setSuccess("CAD State Good: Non-Processing State")
+
         elif self.state == 1:
             print("state 0")
             if event == 'STOP' or event == 'CLEAR':
@@ -62,8 +64,7 @@ class CADStateMachine:
                 print("START or PRESET")
                 self.state = 2
                 await self.funct_ptr(event)
-            else: 
-                self.setSuccess("CAD State Good: Non-Processing State")
+
         elif self.state == 2:
             print("state 0")
             if event == 'CLEAR' or event == 'START' or event == 'STOP':
@@ -74,8 +75,9 @@ class CADStateMachine:
                 print("MARK")
                 self.state = 1
                 await self.funct_ptr(event)
-            else: 
-                self.setSuccess("CAD State Good: Non-Processing State")
+
+        if (self.car_processed == False):
+            self.setSuccess("CAD State Good: Non-Processing State")
 
         return self.state
 

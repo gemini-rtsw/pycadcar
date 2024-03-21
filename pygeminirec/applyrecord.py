@@ -105,6 +105,7 @@ class ApplyRecord(PVGroup):
         super().__init__(*args, **kwargs)
         self.sub_records = []
         self.car_record = None
+        self.car_processed = False
 
 
     def has_sub_records(self):
@@ -119,6 +120,9 @@ class ApplyRecord(PVGroup):
             await self.car_record.VAL.write(car_state)
             await self.car_record.CLID.write(clid)
             await self.car_record.OMSS.write(message)
+            
+            self.car_processed = True
+
 
 
 
