@@ -50,6 +50,8 @@ class CADStateMachine:
                 print("MARK")
                 self.state = 1
                 await self.funct_ptr(event)
+            else: 
+                self.setSuccess("CAD State Good: Non-Processing State")
         elif self.state == 1:
             print("state 0")
             if event == 'STOP' or event == 'CLEAR':
@@ -60,6 +62,8 @@ class CADStateMachine:
                 print("START or PRESET")
                 self.state = 2
                 await self.funct_ptr(event)
+            else: 
+                self.setSuccess("CAD State Good: Non-Processing State")
         elif self.state == 2:
             print("state 0")
             if event == 'CLEAR' or event == 'START' or event == 'STOP':
@@ -70,6 +74,8 @@ class CADStateMachine:
                 print("MARK")
                 self.state = 1
                 await self.funct_ptr(event)
+            else: 
+                self.setSuccess("CAD State Good: Non-Processing State")
 
         return self.state
 

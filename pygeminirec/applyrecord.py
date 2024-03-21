@@ -199,15 +199,15 @@ class ApplyRecord(PVGroup):
 
         #Set the DIR value for all cadRecord instances to match applyRecord's DIR
             
-        processedCAD = False
+    #    processedCAD = False
 
         for sub_record in self.sub_records:
             print(f'{self.prefix} Processing {sub_record.prefix} ...')
 
             # a CAD record will process if MARKed or NOT in state 0
-            if (sub_record.DIR.value == 'MARK' or sub_record.state_machine.state > 0):
-                print(f"CAD {sub_record.prefix} will process")
-                processedCAD = True
+    #        if (sub_record.DIR.value == 'MARK' or sub_record.state_machine.state > 0):
+    #            print(f"CAD {sub_record.prefix} will process")
+    #            processedCAD = True
 
             await sub_record.DIR.write(value)
 
@@ -221,8 +221,7 @@ class ApplyRecord(PVGroup):
                 print(f"Error processing cad record: {sub_record.prefix}")
                 break  
 
-
-#        # only set VAL and MESS if there is a CAD
+        # only set VAL and MESS if there is a CAD
 #        if (len(self.sub_records) > 0):
 #            print(f"VAL: {ret_val}")
 #            print(f"MESS: {ret_mess}")
@@ -230,8 +229,8 @@ class ApplyRecord(PVGroup):
 #            await self.MESS.write(ret_mess)
 
 #        if no CADs process we need to set the success manually
-        if processedCAD == False:
-            await self.setSuccess("Command Succeeded")
+#        if processedCAD == False:
+#            await self.setSuccess("Command Succeeded")
 
 
 
