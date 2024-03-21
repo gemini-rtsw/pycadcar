@@ -120,7 +120,7 @@ class ApplyRecord(PVGroup):
             await self.car_record.VAL.write(car_state)
             await self.car_record.CLID.write(clid)
             await self.car_record.OMSS.write(message)
-            
+
             self.car_processed = True
 
 
@@ -236,7 +236,8 @@ class ApplyRecord(PVGroup):
 #        if processedCAD == False:
 #            await self.setSuccess("Command Succeeded")
 
-
+        if (len(self.sub_records) == 0):
+            await self.setSuccess("Command Succeeded")
 
     # ------------------ VAL  ------------------------- 
     VAL = pvproperty(
