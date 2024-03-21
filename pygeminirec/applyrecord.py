@@ -97,6 +97,18 @@ class CARState:
 #Old : tgnirs:dc:applyC.VAL           BUSY
 #New : tgnirs:dc:applyC.VAL           IDLE
 
+#[software@hbftelops-ld3 ~]$ caput tgnirs:dc:apply.CLID 1 && caput tgnirs:dc:applyC.CLID 1 && caput tgnirs:dc:applyC.VAL IDLE && caput tgnirs:dc:applyC.VAL BUSY && caput tgnirs:dc:applyC.VAL IDLE
+#Old : tgnirs:dc:apply.CLID           1
+#New : tgnirs:dc:apply.CLID           1
+#Old : tgnirs:dc:applyC.CLID          1
+#New : tgnirs:dc:applyC.CLID          1
+#Old : tgnirs:dc:applyC.VAL           IDLE
+#New : tgnirs:dc:applyC.VAL           IDLE
+#Old : tgnirs:dc:applyC.VAL           IDLE
+#New : tgnirs:dc:applyC.VAL           BUSY
+#Old : tgnirs:dc:applyC.VAL           BUSY
+#New : tgnirs:dc:applyC.VAL           IDLE
+
 
 class ApplyRecord(PVGroup):
     """Example group of PVs, where the prefix is defined on instantiation."""

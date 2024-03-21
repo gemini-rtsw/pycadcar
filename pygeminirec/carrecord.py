@@ -107,9 +107,6 @@ class CARRecord(PVGroup):
     async def CLIDputter(self, instance, value):
         print(f'{self.prefix}CLID value changed to: {value}')
 
-        if (self.car_record != None):
-            print(f'Updating {self.car_record.prefix}CLID')
-            await self.car_record.VAL.write(value)
 
 
     OMSS = pvproperty(value='N/A', dtype=caproto.ChannelType.STRING, name="OMSS")
