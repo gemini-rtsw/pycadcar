@@ -41,6 +41,7 @@ class CADStateMachine:
     def __init__(self):
         self.state = 0
         self.funct_ptr = None
+        self.parent = None
 
     async def transition(self, event):
         print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
@@ -77,7 +78,7 @@ class CADStateMachine:
                 await self.funct_ptr(event)
 
         if (self.car_processed == False):
-            self.setSuccess("CAD State Good: Non-Processing State")
+            self.parent.setSuccess("CAD State Good: Non-Processing State")
 
         return self.state
 
@@ -90,8 +91,10 @@ class CADRecord(ApplyRecord):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.state_machine = CADStateMachine()
+        self.parent = self
         self.state_machine.state = 0
         self.state_machine.funct_ptr = self.default_subroutine
+
 
         self.setSuccess("Initialized CAD")
 
