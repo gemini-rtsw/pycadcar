@@ -138,14 +138,17 @@ class CADRecord(ApplyRecord):
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
 
-        # transition to next state and posibly execute subroutine for state
-        print(f'{self.prefix}DIR value changed to: {value}')
-        await self.state_machine.transition(value)
+        val = await self.processSubCADs(self, value)
 
-        await self.MARK.write(self.state_machine.state)
-        print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
+        if (val > 0): # only process ourselves if sub CADs succeeded
+            
+            # transition to next state and posibly execute subroutine for state
+            print(f'{self.prefix}DIR value changed to: {value}')
+            await self.state_machine.transition(value)
 
-        await self.processSubCADs(self, value)
+            await self.MARK.write(self.state_machine.state)
+            print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
+
 
         return value
 
@@ -168,8 +171,8 @@ class CADRecord(ApplyRecord):
         print(f'{self.prefix}MESS value changed to: {value}')
         await self.OMSS.write(self.MESS.value)
 
-        if (self.car_record != None):
-            await self.car_record.OMSS.write(value)
+ #       if (self.car_record != None):
+ #           await self.car_record.OMSS.write(value)
 
         return value
     

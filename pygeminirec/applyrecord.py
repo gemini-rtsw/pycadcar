@@ -245,8 +245,10 @@ class ApplyRecord(PVGroup):
 
         if (val > 0):
             await self.setSuccess(mess)
+            return val
         else:
             await self.setError(mess)
+            return val
 
 
 
