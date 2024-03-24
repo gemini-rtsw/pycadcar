@@ -2,21 +2,19 @@ from caproto.server import pvproperty, PVGroup
 import caproto
 
 
+
 from enum import IntEnum, Enum
 
-
-# Apply and CAD VALs - other systems count - not sure if this is a problem
-class Result(IntEnum):
-    ERROR = 0
-    SUCCESS = 1
-
-class CARState:
-    IDLE = "IDLE"
-    PAUSED = "PAUSED"
-    BUSY = "BUSY"
-    ERR = "ERR"
+import sys
 
 
+#try import locally for testing
+sys.path.insert(0, '../')
+from pygeminirec.recordlinks import RecordLinks
+from pygeminirec.base import BaseExecutor
+from pygeminirec.base import CARState
+from pygeminirec.base import CADDirective
+from pygeminirec.base import Result
 
 
 
@@ -144,112 +142,23 @@ class CARState:
 
 
 
-class ApplyRecord(PVGroup):
+class ApplyRecord(PVGroup, BaseExecutor):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cad_records = []
-        self.car_record = None
-        self.car_processed = False
-
-
-    def has_cad_records(self):
-        return len(self.cad_records) > 0
+        
     
-    def has_car_record(self):
-        return self.car_record != None
-    
-    async def update_car(self, car_state, message, clid):
-        print(f"Update CAR {self.prefix}")
-        if (self.has_car_record()):
-            await self.car_record.update_car(car_state, message, clid)
+    async def set_state(self, **kwargs):
+        # state - Result.ERROR or Result.SUCCESS
+        # message
+        # clid
+        print(f'Updating Sub {self.car_record.prefix} VAL={kwargs['state']} CLID={kwargs['clid']} MESS={kwargs['message']}')
+        await self.CLID.write(kwargs['clid'])
+        await self.MESS.write(kwargs['message'])
+        await self.VAL.write(kwargs['state'])  
 
-            self.car_processed = True
-        else:
-            print("Update CAR {self.prefix} has no CAR")
-
-
-
-
-
-
-    async def setError(self, message):
-        print(f"Setting {self.prefix}MESS = {message}")
-        await self.MESS.write(message)
-        await self.VAL.write(Result.ERROR)
-
-        await self.update_car(CARState.ERR, message, self.CLID.value)
-
-
-    async def clearError(self, message = ''):
-        print(f"Setting {self.prefix}MESS = none")
-        await self.MESS.write('')
-        await self.VAL.write(Result.SUCCESS)
-
-        await self.update_car(CARState.IDLE, message, self.CLID.value)
-
-
-    async def setSuccess(self, message = "Directive State Success"):
-        print(f"Setting {self.prefix}MESS = {message}")
-        await self.MESS.write(message)
-        await self.VAL.write(Result.SUCCESS)
-
-        await self.update_car(CARState.IDLE, message, self.CLID.value)
-
-
-    async def setIdle(self, message = "Directive State Idle"):
-        print(f"Setting {self.prefix}MESS = {message}")
-        await self.MESS.write(message)
-        await self.VAL.write(Result.SUCCESS)
-
-        await self.update_car(CARState.IDLE, message, self.CLID.value)
-
-
-    async def setBusy(self, message = "Directive State Busy"):
-        print(f"Setting {self.prefix}MESS = {message}")
-        await self.MESS.write(message)
-        await self.VAL.write(Result.SUCCESS)
-
-        await self.update_car(CARState.BUSY, message, self.CLID.value)
-
-          
-            
-    async def processSubCADs(self, value):
-        print("++++++++++++++++++++++++++++++++++++")
-        print("Sub CADs Procesing, setting to IDLE")
-        await self.setIdle()
-
-#        print("Sub CADs Procesing, setting to BUSY")
-#        await self.setBusy() # switching from IDLE to BUSY is a trigger for seqexec and other systems that monitor CAR records
-
-        mess = self.MESS.value
-        val = 1 
-
-        for cad_record in self.cad_records:
-            print("**************************************")
-            print(f'{self.prefix} Processing {cad_record.prefix} ...')
-
-            await cad_record.CLID.write(self.CLID.value)
-            await cad_record.DIR.write(value)  # writing a directive to a cad will trigger sub CADs for sub
-
-            # results
-            val  = cad_record.VAL.value
-            mess = cad_record.MESS.value
-
-            print(f'{cad_record.prefix} VAL: {str(val)}')
-
-            if val <= 0:
-                print(f"Error processing cad record: {cad_record.prefix}")
-                break  
-
-        if (val > 0):
-            await self.setSuccess(mess)
-            return val
-        else:
-            await self.setError(mess)
-            return val
-
+        return True, kwargs['message']
 
 
     async def processDirective(self, value):
@@ -262,17 +171,37 @@ class ApplyRecord(PVGroup):
             clid = 0
 
         # increment CLID to start a new directive
-        await self.CLID.write(self.CLID.value + 1)
+        clid = clid + 1
+        print("++++++++++++++++++++++++++++++++++++")
+        print("Set CADs state")
+        await self.update_cad_states(state = Result.SUCCES, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
-        # process CADs
-        await self.processSubCADs(value)
+        # IDLE signals we are about to process directive
+        print("Set CARs to IDLE")
+        await self.update_car_states(state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {value}", clid = clid)
+
+        print("Set CARs to BUSY")
+        await self.update_car_states(state = CARState.BUSY, message = f"Processing Directive BUSY {self.prefix}DIR = {value}", clid = clid)
+
+        print("Process Directive")
+        ret, ret_mess = await self.process_cad_directive(directive = value)
+
+        await self.update_cad_states(state = ret, message = ret_mess, clid = clid)
+
+        car_state = CARState.IDLE
+        if ret == Result.ERROR:
+            car_state = CARState.ERR
+
+        print(f"Completed Directive set CAR to {car_state}")
+        await self.update_car_states(state = car_state, message = f"Processing Directive IDLE {self.prefix}DIR = {value}", clid = clid)
+
 
 
     # ------------------ DIR  ------------------------- 
     DIR = pvproperty(
-        value='MARK',
+        value=CADDirective.PRESET,
         dtype=caproto.ChannelType.ENUM,
-        enum_strings=['MARK', 'CLEAR', 'PRESET', 'START', 'STOP'],
+        enum_strings=[CADDirective.MARK, CADDirective.CLEAR, CADDirective.PRESET, CADDirective.START, CADDirective.STOP],
         name="DIR"
     )
 
@@ -281,16 +210,11 @@ class ApplyRecord(PVGroup):
         await self.DIRputter(instance, value)
 
     async def DIRputter(self, instance, value):
-        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cad_records]}")
-        #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
-        if value == 'START':
-            await self.processDirective('PRESET')
+        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cad_records.records]}")
 
         await self.processDirective(value)
         return value
     
-
-
 
 
 
@@ -300,8 +224,6 @@ class ApplyRecord(PVGroup):
         dtype=caproto.ChannelType.LONG,
         name="VAL"
     )
-
-
     @VAL.putter
     async def VAL(self, instance, value):
         await self.VALputter(instance, value)
@@ -320,9 +242,6 @@ class ApplyRecord(PVGroup):
     async def CLIDputter(self, instance, value):
         print(f'{self.prefix}CLID value changed to: {value}')
 
-#        if (self.car_record != None):
-#            print(f'Updating {self.car_record.prefix}CLID')
-#            await self.car_record.CLID.write(value)
 
     # ------------------ MESS  ------------------------- 
     MESS = pvproperty(value='Initialized', dtype=caproto.ChannelType.STRING, name="MESS")

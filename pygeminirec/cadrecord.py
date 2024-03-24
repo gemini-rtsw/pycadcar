@@ -9,6 +9,8 @@ sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
 from pygeminirec.applyrecord import Result
 from pygeminirec.applyrecord import CARState
+from pygeminirec.applyrecord import CADDirective
+from pygeminirec.recordlinks import RecordLinks
 
 
 
@@ -46,41 +48,42 @@ class CADStateMachine:
     async def transition(self, event):
         print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
 
-        self.car_processed = False
+        ret = Result.SUCCESS # success by default - if nothing processes SNAM its a success
+        ret_mess = ''
 
         if self.state == 0:
             print("state 0")
-            if event == 'MARK':
-                print("MARK")
+            if event == CADDirective.MARK:
+                print(f"CAD state: {CADDirective.MARK}")
                 self.state = 1
-                await self.funct_ptr(event)
+                ret, ret_mess = await self.funct_ptr(event)
 
         elif self.state == 1:
             print("state 0")
-            if event == 'STOP' or event == 'CLEAR':
-                print("STOP or CLEAR")
+            if event == CADDirective.STOP or event == CADDirective.CLEAR:
+                print(f"CAD state: {CADDirective.STOP} or {CADDirective.CLEAR}")
                 self.state = 0
-                await self.funct_ptr(event)
-            elif event == 'START' or event == 'PRESET':
-                print("START or PRESET")
+                ret, ret_mess = await self.funct_ptr(event)
+            elif event == CADDirective.START or event == CADDirective.PRESET:
+                print(f"CAD state: {CADDirective.START} or {CADDirective.PRESET}")
                 self.state = 2
-                await self.funct_ptr(event)
+                ret, ret_mess = await self.funct_ptr(event)
 
         elif self.state == 2:
             print("state 0")
             if event == 'CLEAR' or event == 'START' or event == 'STOP':
-                print("CLEAR or START or STOP")
+                print(f"CAD state: {CADDirective.CLEAR} or {CADDirective.START} or {CADDirective.STOP}")
                 self.state = 0
-                await self.funct_ptr(event)
+                ret, ret_mess = await self.funct_ptr(event)
             elif event == 'MARK':
-                print("MARK")
+                print(f"CAD state: {CADDirective.MARK}")
                 self.state = 1
-                await self.funct_ptr(event)
+                ret, ret_mess = await self.funct_ptr(event)
 
         if (self.car_processed == False):
-            await self.parent.setSuccess("CAD State Good: Non-Processing State")
+            ret, ret_mess = await self.parent.setSuccess("CAD State Good: Non-Processing State")
 
-        return self.state
+        return ret, ret_mess
 
 
 
@@ -96,72 +99,63 @@ class CADRecord(ApplyRecord):
         self.state_machine.funct_ptr = self.default_subroutine
 
 
-        self.setSuccess("Initialized CAD")
-
 
 # Override these functions to implement CAD actions
 # note: they MUST call setSuccess or setError
         
     async def mark(self):
         print("MARK")
-        self.setSuccess("MARK Successful")
+        return Result.SUCCESS, "Directive Processed Successfully"
 
     async def stop(self):
         print("STOP")
-        self.setSuccess("STOP Successful")
+        return Result.SUCCESS, "Directive Processed Successfully"
 
     async def clear(self):
         print("CLEAR")
-        self.setSuccess("CLEAR Successful")
+        return Result.SUCCESS, "Directive Processed Successfully"
 
     async def preset(self):
         print("PRESET")
-        self.setSuccess("PRESET Successful")
+        return Result.SUCCESS, "Directive Processed Successfully"
 
     async def start(self):
         print("START")
-        self.setSuccess("START Successful")
+        return Result.SUCCESS, "Directive Processed Successfully"
 
     async def default_subroutine(self, event):
-            if event == 'MARK':
-                await self.mark()
-            elif event == 'STOP':
-                await self.stop()
-            elif event == 'CLEAR':
-                await self.clear()
-            elif event == 'PRESET':
-                await self.preset()
-            elif event == 'START':
-                await self.start()
+            if event == CADDirective.MARK:
+                return await self.mark()
+            elif event == CADDirective.STOP:
+                return await self.stop()
+            elif event == CADDirective.CLEAR:
+                return await self.clear()
+            elif event == CADDirective.PRESET:
+                return await self.preset()
+            elif event == CADDirective.START:
+                return await self.start()
 
+
+
+    async def process_directive(self, **kwargs):
+        print(f"Processing CAD Directive {{self.prefix}} with ", kwargs)
+        # transition to next state and posibly execute subroutine for state
+        ret, ret_mess = await self.state_machine.transition(kwargs['directive'])
+
+        await self.MARK.write(self.state_machine.state)
+        print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
+
+        await self.VAL.write(ret)
+        await self.MESS.write(ret_mess)
+
+        return ret, ret_mess
 
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
-
-        val = await self.processSubCADs(value)
-
-        if (val > 0): # only process ourselves if sub CADs succeeded
-
-            print("Sub CADs Procesing, setting to BUSY")
-            await self.setBusy()
-
-            # transition to next state and posibly execute subroutine for state
-            print(f'{self.prefix}DIR value changed to: {value}')
-            await self.state_machine.transition(value)
-
-            await self.MARK.write(self.state_machine.state)
-            print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
-
+        print(f'{self.prefix}DIR value changed to: {value}')
 
         return value
 
-
-    # ------------------  MESS  ------------------------- 
-    async def MESSputter(self, instance, value):
-        print(f'{self.prefix}MESS value changed to: {value}')
-        await self.OMSS.write(self.MESS.value)
-
-        return value
     
     # ------------------  SNAM -------------------------
     SNAM = pvproperty(value=0, dtype=caproto.ChannelType.STRING, name="SNAM")

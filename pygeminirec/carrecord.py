@@ -6,6 +6,10 @@ import sys
 sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
 from pygeminirec.applyrecord import CARState
+from pygeminirec.recordlinks import RecordLinks
+from pygeminirec.base import BaseExecutor
+from pygeminirec.base import CARState
+from pygeminirec.base import Result
 
 
 # State Table
@@ -74,34 +78,29 @@ class CARStateMachine:
 
 
 
-class CARRecord(PVGroup):
+class CARRecord(PVGroup, BaseExecutor):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.car_record = None # cascading CAR records
+        self.car_records = RecordLinks()
 
 #        self.state = CARStateMachine()
 
 #        self.state.state = 'IDLE'
         
-    def has_car_record(self):
-        return self.car_record != None
     
-    async def update_car(self, car_state, message, clid):
-        print(f"Update Sub CAR {self.prefix}")
-        if (self.has_car_record()):
-            print(f'Updating Sub {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
-            await self.car_record.CLID.write(clid)
-            await self.car_record.OMSS.write(message)
-            await self.car_record.VAL.write(car_state)
+    async def set_state(self, **kwargs):
+        # state - CARState
+        # message
+        # clid
+        print(f'Updating Sub {self.car_record.prefix} VAL={kwargs['state']} CLID={kwargs['clid']} OMSS={kwargs['message']}')
+        await self.CLID.write(kwargs['clid'])
+        await self.OMSS.write(kwargs['message'])
+        await self.VAL.write(kwargs['state'])
 
-            # recursively update all sub cars
-            await self.car_record.update_car(car_state, message, clid) 
-        else:
-            print("Update Sub CAR {self.prefix} has no CAR")
-
+        return True, kwargs['message']
 
 
     VAL = pvproperty(
