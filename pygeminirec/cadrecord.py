@@ -138,10 +138,10 @@ class CADRecord(ApplyRecord):
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
 
-        val = await self.processSubCADs(self, value)
+        val = await self.processSubCADs(value)
 
         if (val > 0): # only process ourselves if sub CADs succeeded
-            
+
             # transition to next state and posibly execute subroutine for state
             print(f'{self.prefix}DIR value changed to: {value}')
             await self.state_machine.transition(value)

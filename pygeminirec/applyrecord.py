@@ -264,7 +264,7 @@ class ApplyRecord(PVGroup):
         await self.CLID.write(self.CLID.value + 1)
 
         # process CADs
-        self.processSubCADs(self, value)
+        await self.processSubCADs(value)
 
 
     # ------------------ DIR  ------------------------- 
