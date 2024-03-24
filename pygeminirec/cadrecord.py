@@ -152,27 +152,11 @@ class CADRecord(ApplyRecord):
 
         return value
 
-    # ------------------  VAL  ------------------------- 
-    async def VALputter(self, instance, value):
-        await super().VALputter(instance, value)
-
-        print(f'{self.prefix}VAL value changed to: {value}')
-
-#        if (self.car_record != None):
-#            await self.car_record.VAL.write(value)
-
-        return value
-    
 
     # ------------------  MESS  ------------------------- 
     async def MESSputter(self, instance, value):
-        await super().MESSputter(instance, value)
-
         print(f'{self.prefix}MESS value changed to: {value}')
         await self.OMSS.write(self.MESS.value)
-
- #       if (self.car_record != None):
- #           await self.car_record.OMSS.write(value)
 
         return value
     
