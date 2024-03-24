@@ -201,6 +201,14 @@ class ApplyRecord(PVGroup):
         await self.update_car(CARState.IDLE, message, self.CLID.value)
 
 
+    async def setIdle(self, message = "Directive State Idle"):
+        print(f"Setting {self.prefix}MESS = {message}")
+        await self.MESS.write(message)
+        await self.VAL.write(Result.SUCCESS)
+
+        await self.update_car(CARState.IDLE, message, self.CLID.value)
+
+
     async def setBusy(self, message = "Directive State Busy"):
         print(f"Setting {self.prefix}MESS = {message}")
         await self.MESS.write(message)
@@ -230,6 +238,9 @@ class ApplyRecord(PVGroup):
 
         await self.CLID.write(self.CLID.value + 1)
         
+        # Idle state needs to be set to let anyone monitoring the CAR record know that the command is starting - even though it was probably already Idle
+        await self.setIdle()
+
         await self.setBusy()
 
 
