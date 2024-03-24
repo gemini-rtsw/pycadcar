@@ -223,7 +223,13 @@ class ApplyRecord(PVGroup):
  #           print(f'Updating {self.car_record.prefix}VAL')
   #          await self.setBusy()
 
+        # get the CLID and reset if it was set to error last directive
+        clid = self.CLID.value
+        if (clid < 0):
+            clid = 0
 
+        await self.CLID.write(self.CLID.value + 1)
+        
         await self.setBusy()
 
 
