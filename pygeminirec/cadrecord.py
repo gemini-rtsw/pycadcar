@@ -7,6 +7,9 @@ import sys
 #try import locally for testing
 sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
+from pygeminirec.base import Result
+from pygeminirec.base import CARState
+from pygeminirec.base import CADDirective
 
 
 
@@ -77,9 +80,6 @@ class CADStateMachine:
                 self.state = 1
                 ret, ret_mess = await self.funct_ptr(event)
 
-        if (self.car_processed == False):
-            ret, ret_mess = await self.parent.setSuccess("CAD State Good: Non-Processing State")
-
         return ret, ret_mess
 
 
@@ -135,15 +135,29 @@ class CADRecord(ApplyRecord):
 
 
     async def process_directive(self, **kwargs):
+
+        clid = self.CLID.value
+        directive = kwargs['directive']
+
+        # CAD sets it's CAR state to BUSY, which will in turn process any sub CARs
+        await self.update_all_car_states(state = CARState.BUSY, message = f"Processing Directive BUSY {self.prefix}DIR = {directive}", clid = clid)
+
         print(f"Processing CAD Directive {{self.prefix}} with ", kwargs)
         # transition to next state and posibly execute subroutine for state
-        ret, ret_mess = await self.state_machine.transition(kwargs['directive'])
+        ret, ret_mess = await self.state_machine.transition(directive)
 
         await self.MARK.write(self.state_machine.state)
         print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
 
-        await self.VAL.write(ret)
-        await self.MESS.write(ret_mess)
+        if ret == Result.SUCCESS:
+            print(f"Completed Directive with SUCCESS set CAR to {CARState.IDLE} and all CADs to return {Result.SUCCESS}")
+            await self.set_state(state = ret, message = ret_mess, clid = clid)
+            await self.update_all_car_states(state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
+        else:
+            print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with {Result.ERROR}")
+            await self.set_state(val = ret, message = ret_mess, clid = clid)
+            await self.update_all_car_states(state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
+
 
         return ret, ret_mess
 

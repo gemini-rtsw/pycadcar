@@ -7,7 +7,7 @@ sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
 from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CARState
-
+from pygeminirec.base import Result
 
 # State Table
 #
@@ -81,7 +81,7 @@ class CARRecord(PVGroup, BaseExecutor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.car_records = RecordLinks()
+#        self.car_records = RecordLinks()
 
 #        self.state = CARStateMachine()
 
@@ -92,7 +92,7 @@ class CARRecord(PVGroup, BaseExecutor):
         # state - CARState
         # message
         # clid
-        print(f'Updating Sub {self.car_record.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} OMSS={kwargs["message"]}')
+        print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} OMSS={kwargs["message"]}')
         await self.CLID.write(kwargs['clid'])
         await self.OMSS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])

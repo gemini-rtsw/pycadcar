@@ -12,6 +12,7 @@ import sys
 sys.path.insert(0, '../')
 from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CADDirective
+from pygeminirec.base import CARState
 from pygeminirec.base import Result
 
 
@@ -151,7 +152,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         # state - Result.ERROR or Result.SUCCESS
         # message
         # clid
-        print(f'Updating Sub {self.car_record.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} MESS={kwargs["message"]}')
+        print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} MESS={kwargs["message"]}')
         await self.CLID.write(kwargs['clid'])
         await self.MESS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])  
@@ -172,26 +173,18 @@ class ApplyRecord(PVGroup, BaseExecutor):
         clid = clid + 1
         print("++++++++++++++++++++++++++++++++++++")
         print("Set CADs state")
-        await self.update_cad_states(state = Result.SUCCES, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
+        await self.update_all_cad_states(state = Result.SUCCESS, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
         # IDLE signals we are about to process directive
         print("Set CARs to IDLE")
-        await self.update_car_states(state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {value}", clid = clid)
-
-        print("Set CARs to BUSY")
-        await self.update_car_states(state = CARState.BUSY, message = f"Processing Directive BUSY {self.prefix}DIR = {value}", clid = clid)
+        await self.update_all_car_states(state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {value}", clid = clid)
 
         print("Process Directive")
-        ret, ret_mess = await self.process_cad_directive(directive = value)
+        ret, ret_mess, ret_cad = await self.process_all_cad_directives(directive = value)
 
-        await self.update_cad_states(state = ret, message = ret_mess, clid = clid)
 
-        car_state = CARState.IDLE
-        if ret == Result.ERROR:
-            car_state = CARState.ERR
 
-        print(f"Completed Directive set CAR to {car_state}")
-        await self.update_car_states(state = car_state, message = f"Processing Directive IDLE {self.prefix}DIR = {value}", clid = clid)
+
 
 
 
@@ -208,7 +201,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.DIRputter(instance, value)
 
     async def DIRputter(self, instance, value):
-        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cad_records.records]}")
+        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cads.records]}")
 
         await self.processDirective(value)
         return value
