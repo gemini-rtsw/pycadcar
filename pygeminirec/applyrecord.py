@@ -225,6 +225,7 @@ class ApplyRecord(PVGroup):
 
 
     async def setSubRecordDir(self, value):
+        print(f'{self.prefix} Processing Directive')
 
         # Set CAR record to BUSY
  #       if (self.car_record != None):
@@ -240,8 +241,6 @@ class ApplyRecord(PVGroup):
         
         # Idle state needs to be set to let anyone monitoring the CAR record know that the command is starting - even though it was probably already Idle
         await self.setIdle()
-
-        await self.setBusy()
 
 
         #Set the DIR value for all cadRecord instances to match applyRecord's DIR
@@ -279,7 +278,9 @@ class ApplyRecord(PVGroup):
 #        if processedCAD == False:
 #            await self.setSuccess("Command Succeeded")
 
+        # if no CADs then manually set CAR states to signal listeners that the DIR has gone through
         if (len(self.sub_records) == 0):
+            await self.setBusy()
             await self.setSuccess("Command Succeeded")
 
 
