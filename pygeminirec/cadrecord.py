@@ -138,24 +138,14 @@ class CADRecord(ApplyRecord):
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
 
-        # CAR is set busy while we are working
-#        if (self.car_record != None):
-#            print(f"Set {self.car_record}VAL=BUSY")
-#            print(f'Updating {self.car_record.prefix}VAL')
-#
-#             await self.car_record.VAL.write(CARState.BUSY)
-        
-        await self.setBusy()
-
         # transition to next state and posibly execute subroutine for state
         print(f'{self.prefix}DIR value changed to: {value}')
         await self.state_machine.transition(value)
 
         await self.MARK.write(self.state_machine.state)
-
         print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
 
-        await super().DIRputter(instance, value)
+        await self.processSubCADs(self, value)
 
         return value
 

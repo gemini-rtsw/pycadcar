@@ -149,7 +149,7 @@ class ApplyRecord(PVGroup):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sub_records = []
+        self.cad_records = []
         self.car_record = None
         self.car_processed = False
 
@@ -216,72 +216,53 @@ class ApplyRecord(PVGroup):
 
         await self.update_car(CARState.BUSY, message, self.CLID.value)
 
-        # update CAR
-#        if (self.has_car_record()  and not self.has_sub_records()):
-#            print(f'Updating {self.car_record.prefix}VAL to BUSY')
-#            await self.car_record.VAL.write(CARState.BUSY)
-#            await self.car_record.CLID.write(self.VAL.value)            
+          
             
+    async def processSubCADs(self, value):
+
+        print("Sub CADs Procesing, setting to IDLE")
+        await self.setIdle()
+
+        print("Sub CADs Procesing, setting to BUSY")
+        await self.setBusy() # switching from IDLE to BUSY is a trigger for seqexec and other systems that monitor CAR records
 
 
-    async def setSubRecordDir(self, value):
+        for cad_record in self.cad_records:
+            print(f'{self.prefix} Processing {cad_record.prefix} ...')
+
+            await cad_record.CLID.write(self.CLID.value)
+            await cad_record.DIR.write(value)  # writing a directive to a cad will trigger sub CADs for sub
+
+            # results
+            val  = cad_record.VAL.value
+            mess = cad_record.MESS.value
+
+            print(f'{cad_record.prefix} VAL: {str(val)}')
+
+            if val <= 0:
+                print(f"Error processing cad record: {cad_record.prefix}")
+                break  
+
+        if (val > 0):
+            await self.setSuccess(mess)
+        else:
+            await self.setError(mess)
+
+
+
+    async def processDirective(self, value):
         print(f'{self.prefix} Processing Directive')
-
-        # Set CAR record to BUSY
- #       if (self.car_record != None):
- #           print(f'Updating {self.car_record.prefix}VAL')
-  #          await self.setBusy()
 
         # get the CLID and reset if it was set to error last directive
         clid = self.CLID.value
         if (clid < 0):
             clid = 0
 
+        # increment CLID to start a new directive
         await self.CLID.write(self.CLID.value + 1)
-        
-        # Idle state needs to be set to let anyone monitoring the CAR record know that the command is starting - even though it was probably already Idle
-        await self.setIdle()
 
-
-        #Set the DIR value for all cadRecord instances to match applyRecord's DIR
-            
-    #    processedCAD = False
-
-        for sub_record in self.sub_records:
-            print(f'{self.prefix} Processing {sub_record.prefix} ...')
-
-            # a CAD record will process if MARKed or NOT in state 0
-    #        if (sub_record.DIR.value == 'MARK' or sub_record.state_machine.state > 0):
-    #            print(f"CAD {sub_record.prefix} will process")
-    #            processedCAD = True
-
-            await sub_record.DIR.write(value)
-
-            # results
-            ret_val  = sub_record.VAL.value
-            ret_mess = sub_record.MESS.value
-
-            print(f'{sub_record.prefix} VAL: {str(ret_val)}')
-
-            if sub_record.VAL.value <= 0:
-                print(f"Error processing cad record: {sub_record.prefix}")
-                break  
-
-        # only set VAL and MESS if there is a CAD
-#        if (len(self.sub_records) > 0):
-#            print(f"VAL: {ret_val}")
-#            print(f"MESS: {ret_mess}")
-#            await self.VAL.write(ret_val)
-#            await self.MESS.write(ret_mess)
-
-#        if no CADs process we need to set the success manually
-#        if processedCAD == False:
-#            await self.setSuccess("Command Succeeded")
-
-        # if no CADs then manually set CAR states to signal listeners that the DIR has gone through
-        if (len(self.sub_records) == 0):
-            await self.setBusy()
-            await self.setSuccess("Command Succeeded")
+        # process CADs
+        self.processSubCADs(self, value)
 
 
     # ------------------ DIR  ------------------------- 
@@ -300,9 +281,9 @@ class ApplyRecord(PVGroup):
         print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.sub_records]}")
         #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
         if value == 'START':
-            await self.setSubRecordDir('PRESET')
+            await self.processDirective('PRESET')
 
-        await self.setSubRecordDir(value)
+        await self.processDirective(value)
         return value
     
 
