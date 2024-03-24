@@ -91,7 +91,7 @@ class CADRecord(ApplyRecord):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.state_machine = CADStateMachine()
-        self.parent = self
+        self.state_machine.parent = self
         self.state_machine.state = 0
         self.state_machine.funct_ptr = self.default_subroutine
 
