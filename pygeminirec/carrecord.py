@@ -96,6 +96,9 @@ class CARRecord(PVGroup):
             await self.car_record.CLID.write(clid)
             await self.car_record.OMSS.write(message)
             await self.car_record.VAL.write(car_state)
+
+            # recursively update all sub cars
+            await self.car_record.update_car(car_state, message, clid) 
         else:
             print("Update Sub CAR {self.prefix} has no CAR")
 
@@ -129,8 +132,5 @@ class CARRecord(PVGroup):
     @VAL.putter
     async def VAL(self, instance, value):
         print(f'{self.prefix}VAL value changed to: {value}')
-
-        if self.has_car_record():
-            await self.update_car(value, self.car_record.OMSS.value, self.car_record.CLID.value)
 
         return value
