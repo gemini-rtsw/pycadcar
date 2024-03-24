@@ -130,6 +130,7 @@ class CARRecord(PVGroup):
     async def VAL(self, instance, value):
         print(f'{self.prefix}VAL value changed to: {value}')
 
-        await self.update_car(value, self.car_record.OMSS.value, self.car_record.CLID.value)
+        if self.has_car_record():
+            await self.update_car(value, self.car_record.OMSS.value, self.car_record.CLID.value)
 
         return value
