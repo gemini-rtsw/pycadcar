@@ -164,9 +164,9 @@ class ApplyRecord(PVGroup):
         print(f"Update CAR {self.prefix}")
         if (self.has_car_record()):
             print(f'Updating {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
-            await self.car_record.VAL.write(car_state)
             await self.car_record.CLID.write(clid)
             await self.car_record.OMSS.write(message)
+            await self.car_record.VAL.write(car_state)
 
             self.car_processed = True
         else:

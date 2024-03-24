@@ -85,6 +85,21 @@ class CARRecord(PVGroup):
 #        self.state = CARStateMachine()
 
 #        self.state.state = 'IDLE'
+        
+    def has_car_record(self):
+        return self.car_record != None
+    
+    async def update_car(self, car_state, message, clid):
+        print(f"Update Sub CAR {self.prefix}")
+        if (self.has_car_record()):
+            print(f'Updating Sub {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
+            await self.car_record.CLID.write(clid)
+            await self.car_record.OMSS.write(message)
+            await self.car_record.VAL.write(car_state)
+        else:
+            print("Update Sub CAR {self.prefix} has no CAR")
+
+
 
     VAL = pvproperty(
         value=CARState.IDLE,
@@ -93,11 +108,6 @@ class CARRecord(PVGroup):
         name="VAL"
     )
         
-#    VAL = pvproperty(
-#        value=0,  # Assuming 0 as the default integer value
-#        dtype=caproto.ChannelType.LONG,
-#        name="VAL"
-#    )
 
     CLID = pvproperty(value=0, dtype=caproto.ChannelType.LONG, name="CLID")
     @CLID.putter
@@ -119,6 +129,7 @@ class CARRecord(PVGroup):
     @VAL.putter
     async def VAL(self, instance, value):
         print(f'{self.prefix}VAL value changed to: {value}')
-        #self.state.transition(value)
-        #print(f'{self.prefix}CAR state is now: {self.state.state}')
+
+        await self.update_car(value, self.car_record.OMSS.value, self.car_record.CLID.value)
+
         return value
