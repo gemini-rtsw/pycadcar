@@ -109,6 +109,40 @@ class CARState:
 #Old : tgnirs:dc:applyC.VAL           BUSY
 #New : tgnirs:dc:applyC.VAL           IDLE
 
+################################
+#
+#[software@hbftelops-ld3 ~]$ caput tgnirs:dc:apply.CLID 1 && caput tgnirs:dc:applyC.CLID 1 && caput tgnirs:dc:observeC.CLID 1 && caput tgnirs:dc:applyC.VAL IDLE && caput tgnirs:dc:observeC.VAL IDLE && caput tgnirs:dc:observeC.VAL BUSY && caput tgnirs:dc:applyC.VAL BUSY && caput tgnirs:dc:applyC.VAL IDLE && caput tgnirs:dc:observeC.VAL IDLE
+#Old : tgnirs:dc:apply.CLID           1
+#New : tgnirs:dc:apply.CLID           1
+#Old : tgnirs:dc:applyC.CLID          1
+#New : tgnirs:dc:applyC.CLID          1
+#Old : tgnirs:dc:observeC.CLID        1
+#New : tgnirs:dc:observeC.CLID        1
+#Old : tgnirs:dc:applyC.VAL           IDLE
+#New : tgnirs:dc:applyC.VAL           IDLE
+#Old : tgnirs:dc:observeC.VAL         IDLE
+#New : tgnirs:dc:observeC.VAL         IDLE
+#Old : tgnirs:dc:observeC.VAL         IDLE
+#New : tgnirs:dc:observeC.VAL         BUSY
+#Old : tgnirs:dc:applyC.VAL           IDLE
+#New : tgnirs:dc:applyC.VAL           BUSY
+#Old : tgnirs:dc:applyC.VAL           BUSY
+#New : tgnirs:dc:applyC.VAL           IDLE
+#Old : tgnirs:dc:observeC.VAL         BUSY
+#New : tgnirs:dc:observeC.VAL         IDLE
+
+
+#tgnirs:dc:apply.CLID           2024-03-21 09:04:31.493962 1  
+#tgnirs:dc:apply.CLID           2024-03-21 09:04:34.557318 1  
+#tgnirs:dc:applyC.VAL           2024-03-21 09:04:34.674262 IDLE  
+#tgnirs:dc:observeC.VAL         2024-03-21 09:04:34.716088 IDLE  
+#tgnirs:dc:observeC.VAL         2024-03-21 09:04:34.752762 BUSY  
+#tgnirs:dc:applyC.VAL           2024-03-21 09:04:34.792297 BUSY  
+#tgnirs:dc:applyC.VAL           2024-03-21 09:04:34.834194 IDLE  
+#tgnirs:dc:observeC.VAL         2024-03-21 09:04:34.875928 IDLE
+
+
+
 
 class ApplyRecord(PVGroup):
     """Example group of PVs, where the prefix is defined on instantiation."""
@@ -127,6 +161,7 @@ class ApplyRecord(PVGroup):
         return self.car_record != None
     
     async def update_car(self, car_state, message, clid):
+        print("Update CAR {self.prefix}")
         if (self.has_car_record()):
             print(f'Updating {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
             await self.car_record.VAL.write(car_state)
@@ -134,31 +169,10 @@ class ApplyRecord(PVGroup):
             await self.car_record.OMSS.write(message)
 
             self.car_processed = True
+        else:
+            print("Update CAR {self.prefix} has no CAR")
 
 
-
-
-    # ------------------ DIR  ------------------------- 
-    DIR = pvproperty(
-        value='MARK',
-        dtype=caproto.ChannelType.ENUM,
-        enum_strings=['MARK', 'CLEAR', 'PRESET', 'START', 'STOP'],
-        name="DIR"
-    )
-
-    @DIR.putter
-    async def DIR(self, instance, value):
-        await self.DIRputter(instance, value)
-
-    async def DIRputter(self, instance, value):
-        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.sub_records]}")
-        #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
-        if value == 'START':
-            await self.setSubRecordDir('PRESET')
-
-        await self.setSubRecordDir(value)
-        return value
-    
 
 
 
@@ -168,7 +182,7 @@ class ApplyRecord(PVGroup):
         await self.MESS.write(message)
         await self.VAL.write(Result.ERROR)
 
-        self.update_car(CARState.ERR, message, self.CLID.value)
+        await self.update_car(CARState.ERR, message, self.CLID.value)
 
 
     async def clearError(self, message = ''):
@@ -176,7 +190,7 @@ class ApplyRecord(PVGroup):
         await self.MESS.write('')
         await self.VAL.write(Result.SUCCESS)
 
-        self.update_car(CARState.IDLE, message, self.CLID.value)
+        await self.update_car(CARState.IDLE, message, self.CLID.value)
 
 
     async def setSuccess(self, message = "Directive State Success"):
@@ -184,7 +198,7 @@ class ApplyRecord(PVGroup):
         await self.MESS.write(message)
         await self.VAL.write(Result.SUCCESS)
 
-        self.update_car(CARState.IDLE, message, self.CLID.value)
+        await self.update_car(CARState.IDLE, message, self.CLID.value)
 
 
     async def setBusy(self, message = "Directive State Busy"):
@@ -192,7 +206,7 @@ class ApplyRecord(PVGroup):
         await self.MESS.write(message)
         await self.VAL.write(Result.SUCCESS)
 
-        self.update_car(CARState.BUSY, message, self.CLID.value)
+        await self.update_car(CARState.BUSY, message, self.CLID.value)
 
         # update CAR
 #        if (self.has_car_record()  and not self.has_sub_records()):
@@ -250,6 +264,33 @@ class ApplyRecord(PVGroup):
 
         if (len(self.sub_records) == 0):
             await self.setSuccess("Command Succeeded")
+
+
+    # ------------------ DIR  ------------------------- 
+    DIR = pvproperty(
+        value='MARK',
+        dtype=caproto.ChannelType.ENUM,
+        enum_strings=['MARK', 'CLEAR', 'PRESET', 'START', 'STOP'],
+        name="DIR"
+    )
+
+    @DIR.putter
+    async def DIR(self, instance, value):
+        await self.DIRputter(instance, value)
+
+    async def DIRputter(self, instance, value):
+        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.sub_records]}")
+        #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
+        if value == 'START':
+            await self.setSubRecordDir('PRESET')
+
+        await self.setSubRecordDir(value)
+        return value
+    
+
+
+
+
 
     # ------------------ VAL  ------------------------- 
     VAL = pvproperty(

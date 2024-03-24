@@ -78,7 +78,7 @@ class CADStateMachine:
                 await self.funct_ptr(event)
 
         if (self.car_processed == False):
-            self.parent.setSuccess("CAD State Good: Non-Processing State")
+            await self.parent.setSuccess("CAD State Good: Non-Processing State")
 
         return self.state
 
