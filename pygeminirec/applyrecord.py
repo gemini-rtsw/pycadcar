@@ -227,6 +227,8 @@ class ApplyRecord(PVGroup):
         await self.setBusy() # switching from IDLE to BUSY is a trigger for seqexec and other systems that monitor CAR records
 
 
+        val = 1 
+        
         for cad_record in self.cad_records:
             print(f'{self.prefix} Processing {cad_record.prefix} ...')
 
