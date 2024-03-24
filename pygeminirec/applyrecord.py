@@ -161,7 +161,7 @@ class ApplyRecord(PVGroup):
         return self.car_record != None
     
     async def update_car(self, car_state, message, clid):
-        print("Update CAR {self.prefix}")
+        print(f"Update CAR {self.prefix}")
         if (self.has_car_record()):
             print(f'Updating {self.car_record.prefix} VAL={car_state} CLID={clid} OMSS={message}')
             await self.car_record.VAL.write(car_state)
@@ -219,7 +219,7 @@ class ApplyRecord(PVGroup):
           
             
     async def processSubCADs(self, value):
-
+        print("++++++++++++++++++++++++++++++++++++")
         print("Sub CADs Procesing, setting to IDLE")
         await self.setIdle()
 
@@ -230,6 +230,7 @@ class ApplyRecord(PVGroup):
         val = 1 
 
         for cad_record in self.cad_records:
+            print("**************************************")
             print(f'{self.prefix} Processing {cad_record.prefix} ...')
 
             await cad_record.CLID.write(self.CLID.value)
@@ -255,6 +256,7 @@ class ApplyRecord(PVGroup):
 
 
     async def processDirective(self, value):
+        print("-----------------------------------")
         print(f'{self.prefix} Processing Directive')
 
         # get the CLID and reset if it was set to error last directive
