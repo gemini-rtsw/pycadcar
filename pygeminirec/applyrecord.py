@@ -154,8 +154,8 @@ class ApplyRecord(PVGroup):
         self.car_processed = False
 
 
-    def has_sub_records(self):
-        return len(self.sub_records) > 0
+    def has_cad_records(self):
+        return len(self.cad_records) > 0
     
     def has_car_record(self):
         return self.car_record != None
@@ -278,7 +278,7 @@ class ApplyRecord(PVGroup):
         await self.DIRputter(instance, value)
 
     async def DIRputter(self, instance, value):
-        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.sub_records]}")
+        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cad_records]}")
         #Writing the START directive forces the PRESET directive to be sent to all links before the START directive is sent.
         if value == 'START':
             await self.processDirective('PRESET')
