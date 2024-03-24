@@ -223,8 +223,8 @@ class ApplyRecord(PVGroup):
         print("Sub CADs Procesing, setting to IDLE")
         await self.setIdle()
 
-        print("Sub CADs Procesing, setting to BUSY")
-        await self.setBusy() # switching from IDLE to BUSY is a trigger for seqexec and other systems that monitor CAR records
+#        print("Sub CADs Procesing, setting to BUSY")
+#        await self.setBusy() # switching from IDLE to BUSY is a trigger for seqexec and other systems that monitor CAR records
 
         mess = self.MESS.value
         val = 1 

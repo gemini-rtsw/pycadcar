@@ -142,6 +142,9 @@ class CADRecord(ApplyRecord):
 
         if (val > 0): # only process ourselves if sub CADs succeeded
 
+            print("Sub CADs Procesing, setting to BUSY")
+            self.setBusy()
+
             # transition to next state and posibly execute subroutine for state
             print(f'{self.prefix}DIR value changed to: {value}')
             await self.state_machine.transition(value)
