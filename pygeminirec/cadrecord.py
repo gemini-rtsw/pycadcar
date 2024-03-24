@@ -7,10 +7,7 @@ import sys
 #try import locally for testing
 sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
-from pygeminirec.applyrecord import Result
-from pygeminirec.applyrecord import CARState
-from pygeminirec.applyrecord import CADDirective
-from pygeminirec.recordlinks import RecordLinks
+
 
 
 

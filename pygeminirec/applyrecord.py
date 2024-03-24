@@ -10,9 +10,7 @@ import sys
 
 #try import locally for testing
 sys.path.insert(0, '../')
-from pygeminirec.recordlinks import RecordLinks
 from pygeminirec.base import BaseExecutor
-from pygeminirec.base import CARState
 from pygeminirec.base import CADDirective
 from pygeminirec.base import Result
 
@@ -153,12 +151,12 @@ class ApplyRecord(PVGroup, BaseExecutor):
         # state - Result.ERROR or Result.SUCCESS
         # message
         # clid
-        print(f'Updating Sub {self.car_record.prefix} VAL={kwargs['state']} CLID={kwargs['clid']} MESS={kwargs['message']}')
+        print(f'Updating Sub {self.car_record.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} MESS={kwargs["message"]}')
         await self.CLID.write(kwargs['clid'])
         await self.MESS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])  
 
-        return True, kwargs['message']
+        return Result.SUCCESS, kwargs['message']
 
 
     async def processDirective(self, value):

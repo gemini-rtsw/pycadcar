@@ -1,7 +1,3 @@
-import sys
-
-sys.path.insert(0, '../')
-from pygeminirec.base import Result
 
 class RecordLinks:
     def __init__(self, parent=None):
