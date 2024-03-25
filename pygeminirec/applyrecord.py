@@ -7,6 +7,7 @@ from enum import IntEnum, Enum
 
 import sys
 
+import asyncio
 
 #try import locally for testing
 sys.path.insert(0, '../')
@@ -147,7 +148,21 @@ class ApplyRecord(PVGroup, BaseExecutor):
     def __init__(self, *args, **kwargs):
         PVGroup.__init__(self, *args, **kwargs)  # Explicitly call PVGroup's constructor
         BaseExecutor.__init__(self)  # Explicitly call BaseExecutor's constructor
-    
+
+        # Start the event loop
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.monitor_directive())
+
+    async def monitor_directive(self):
+        last_value = None
+        while True:
+            current_value = self.DIR.value  # Assuming this fetches the current PV value directly
+            if current_value != last_value:
+                # If the value has changed, process the directive with the current value
+                await self.processDirective(current_value)
+                last_value = current_value  # Update last_value to the new value
+            await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
+        
     async def set_state(self, **kwargs):
         # state - Result.ERROR or Result.SUCCESS
         # message
@@ -181,10 +196,6 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
 
 
-
-
-
-
     # ------------------ DIR  ------------------------- 
     DIR = pvproperty(
         value=CADDirective.PRESET,
@@ -193,15 +204,15 @@ class ApplyRecord(PVGroup, BaseExecutor):
         name="DIR"
     )
 
-    @DIR.putter
-    async def DIR(self, instance, value):
-        await self.DIRputter(instance, value)
+    #@DIR.putter
+#    async def DIR(self, instance, value):
+ #       await self.DIRputter(instance, value)
 
-    async def DIRputter(self, instance, value):
-        print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cads.records]}")
-
-        await self.processDirective(value)
-        return value
+ #   async def DIRputter(self, instance, value):
+ #       print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cads.records]}")
+  #      self.pv_changed_event.set()
+      #  await self.processDirective(value)
+ #       return value
     
 
 
