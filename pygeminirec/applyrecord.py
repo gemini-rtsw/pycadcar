@@ -173,11 +173,11 @@ class ApplyRecord(PVGroup, BaseExecutor):
         clid = clid + 1
         print("++++++++++++++++++++++++++++++++++++")
         print("Set CADs state")
-        await self.update_all_cad_states(reverse = True, state = Result.SUCCESS, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
+        await self.update_all_cad_states(reverse = False, state = Result.SUCCESS, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
 
         print("Process Directive")
-        ret, ret_mess, ret_cad = await self.process_all_cad_directives(directive = value)
+        ret, ret_mess, ret_cad = await self.process_all_cad_directives(reverse = False, directive = value)
 
 
 
