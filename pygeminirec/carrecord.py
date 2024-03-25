@@ -79,7 +79,8 @@ class CARRecord(PVGroup, BaseExecutor):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        PVGroup.__init__(self, *args, **kwargs)  # Explicitly call PVGroup's constructor
+        BaseExecutor.__init__(self)  # Explicitly call BaseExecutor's constructor
 
 #        self.car_records = RecordLinks()
 

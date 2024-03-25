@@ -139,8 +139,13 @@ class CADRecord(ApplyRecord):
         clid = self.CLID.value
         directive = kwargs['directive']
 
+        # IDLE signals we are about to process directive
+        print("Set CARs to IDLE")
+        await self.update_all_car_states(reverse = True, state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
+
+
         # CAD sets it's CAR state to BUSY, which will in turn process any sub CARs
-        await self.update_all_car_states(state = CARState.BUSY, message = f"Processing Directive BUSY {self.prefix}DIR = {directive}", clid = clid)
+        await self.update_all_car_states(reverse = False, state = CARState.BUSY, message = f"Processing Directive BUSY {self.prefix}DIR = {directive}", clid = clid)
 
         print(f"Processing CAD Directive {{self.prefix}} with ", kwargs)
         # transition to next state and posibly execute subroutine for state
@@ -152,11 +157,11 @@ class CADRecord(ApplyRecord):
         if ret == Result.SUCCESS:
             print(f"Completed Directive with SUCCESS set CAR to {CARState.IDLE} and all CADs to return {Result.SUCCESS}")
             await self.set_state(state = ret, message = ret_mess, clid = clid)
-            await self.update_all_car_states(state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
+            await self.update_all_car_states(reverse = True, state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
         else:
             print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with {Result.ERROR}")
             await self.set_state(val = ret, message = ret_mess, clid = clid)
-            await self.update_all_car_states(state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
+            await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
 
 
         return ret, ret_mess

@@ -7,8 +7,9 @@ from pygeminirec.recordlinks import Result
 
 class BaseExecutor:
 
-    cads = RecordLinks()
-    cars = RecordLinks()
+    def __init__(self):
+        self.cads = RecordLinks()
+        self.cars = RecordLinks()
 
 
     # update_all_cad_states - processes the command on itself as well as all chile CADs
@@ -17,22 +18,22 @@ class BaseExecutor:
     # update_all_car_states - does not process on itself because it is only called from a CAD 
     #                         it processes on CARs only
 
-    async def update_all_cad_states(self, **kwargs):
+    async def update_all_cad_states(self, reverse, **kwargs):
         print(f"Update CAD States top {self.prefix}")
         result, ret_mess = await self.set_state(**kwargs)
 
         if result == Result.SUCCESS:
-            return await self.cads.execute_on_all('set_state', **kwargs)
+            return await self.cads.execute_on_all('cads', 'set_state', reverse, **kwargs)
         else:
             return result, ret_mess, self
     
-    async def process_all_cad_directives(self, **kwargs):
+    async def process_all_cad_directives(self, reverse, **kwargs):
         print(f"Process CAD Directives top {self.prefix}")
-        return await self.cads.execute_on_all('process_directive', **kwargs)
+        return await self.cads.execute_on_all('cads', 'process_directive', reverse, **kwargs)
         
-    async def update_all_car_states(self, **kwargs):
+    async def update_all_car_states(self, reverse, **kwargs):
         print(f"Updating CARs for {self.prefix}")
-        return await self.cars.execute_on_all('set_state', **kwargs)
+        return await self.cars.execute_on_all('cars', 'set_state', reverse, **kwargs)
 
 
     async def set_state(self, **kwargs):

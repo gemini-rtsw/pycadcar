@@ -145,8 +145,8 @@ class ApplyRecord(PVGroup, BaseExecutor):
     """Example group of PVs, where the prefix is defined on instantiation."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
+        PVGroup.__init__(self, *args, **kwargs)  # Explicitly call PVGroup's constructor
+        BaseExecutor.__init__(self)  # Explicitly call BaseExecutor's constructor
     
     async def set_state(self, **kwargs):
         # state - Result.ERROR or Result.SUCCESS
@@ -173,11 +173,8 @@ class ApplyRecord(PVGroup, BaseExecutor):
         clid = clid + 1
         print("++++++++++++++++++++++++++++++++++++")
         print("Set CADs state")
-        await self.update_all_cad_states(state = Result.SUCCESS, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
+        await self.update_all_cad_states(reverse = True, state = Result.SUCCESS, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
-        # IDLE signals we are about to process directive
-        print("Set CARs to IDLE")
-        await self.update_all_car_states(state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {value}", clid = clid)
 
         print("Process Directive")
         ret, ret_mess, ret_cad = await self.process_all_cad_directives(directive = value)

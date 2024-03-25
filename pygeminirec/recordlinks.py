@@ -20,25 +20,43 @@ class RecordLinks:
 
 # only implemented for one layer of CAD/CAR any more need work
         
-    async def execute_on_all(self, command_func_name, **kwargs):
+    async def execute_on_all(self, caller, command_func_name, reverse=False, **kwargs):
+        
+        # Determine the iteration order based on the reverse flag
+        records_iterable = reversed(self.records) if reverse else self.records
 
-        # Iterate over each record in the list and execute the command_func on it
-        for record in self.records:
-            print(f"Checking command on {record.prefix}")
+        for record in records_iterable:
+            print(f"Executing commands recursively on {record.prefix}")
 
-            # Retrieve the method by name from the record
-            if hasattr(record, command_func_name):
-                command_method = getattr(record, command_func_name)
-                if callable(command_method):
-                    # Execute the method with the provided kwargs
-                    print(f"Executing command on {record.prefix}")
-                    result, ret_mess = await command_method(**kwargs)
-                    # If the method returns Result.ERROR, halt execution and return
-                    if result is Result.ERROR:
-                        return result, ret_mess, record
-            else:
-                print(f"Command function {command_func_name} does not exist on record {record}")
-                return Result.ERROR, "Method Not Found", record
+            # Depending on the caller, we select the appropriate RecordLinks instance
+            records_to_process = getattr(record, caller)
 
-        # If all records have been processed without errors, return success
-        return Result.SUCCESS, f"All sub records processed successfully", None
+            # If not reversing, process the current record's command first (head recursion)
+            if not reverse:
+                result, ret_mess = await self.process_current_record(record, command_func_name, **kwargs)
+                if result == Result.ERROR:
+                    return result, ret_mess, record
+
+            # Recursively call execute_on_all on the selected records_to_process
+            recursive_result, recursive_message, _ = await records_to_process.execute_on_all(caller, command_func_name, reverse=reverse, **kwargs)
+            if recursive_result == Result.ERROR:
+                return recursive_result, recursive_message, record
+
+            # If reversing, process the current record's command after the recursive call (tail recursion)
+            if reverse:
+                result, ret_mess = await self.process_current_record(record, command_func_name, **kwargs)
+                if result == Result.ERROR:
+                    return result, ret_mess, record
+
+        return Result.SUCCESS, "All sub records processed successfully", None
+
+    async def process_current_record(self, record, command_func_name, **kwargs):
+        # Retrieve and execute the command method on the current record
+        if hasattr(record, command_func_name):
+            command_method = getattr(record, command_func_name)
+            if callable(command_method):
+                print(f"Executing command on {record.prefix}")
+                return await command_method(**kwargs)
+        else:
+            print(f"Command function {command_func_name} does not exist on record {record}")
+            return Result.ERROR, "Method Not Found", record
