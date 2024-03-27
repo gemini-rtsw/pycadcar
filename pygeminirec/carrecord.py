@@ -7,7 +7,6 @@ sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
 from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CARState
-from pygeminirec.base import Result
 
 # State Table
 #
@@ -98,7 +97,7 @@ class CARRecord(PVGroup, BaseExecutor):
         await self.OMSS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])
 
-        return Result.SUCCESS, kwargs['message']
+        return self.CLID.value, kwargs['message']
 
 
     VAL = pvproperty(

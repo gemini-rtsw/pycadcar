@@ -14,7 +14,6 @@ sys.path.insert(0, '../')
 from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CADDirective
 from pygeminirec.base import CARState
-from pygeminirec.base import Result
 
 
 
@@ -162,10 +161,9 @@ class ApplyRecord(PVGroup, BaseExecutor):
                 await self.processDirective(current_value)
                 last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
-
-        
+ 
     async def set_state(self, **kwargs):
-        # state - Result.ERROR or Result.SUCCESS
+        # state - SUCCESS > 0 ERROR <= 0
         # message
         # clid
         print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} MESS={kwargs["message"]}')
@@ -173,7 +171,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.MESS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])  
 
-        return Result.SUCCESS, kwargs['message']
+        return self.CLID.value, kwargs['message']
 
 
     async def processDirective(self, value):
@@ -189,7 +187,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         clid = clid + 1
         print("++++++++++++++++++++++++++++++++++++")
         print("Set CADs state")
-        await self.update_all_cad_states(reverse = False, state = Result.SUCCESS, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
+        await self.update_all_cad_states(reverse = False, state = clid, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
 
         print("Process Directive")
@@ -220,7 +218,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
     # ------------------ VAL  ------------------------- 
     VAL = pvproperty(
-        value=Result.SUCCESS,  # Assuming 0 as the default integer value
+        value=1,  # Assuming 0 as the default integer value
         dtype=caproto.ChannelType.LONG,
         name="VAL"
     )

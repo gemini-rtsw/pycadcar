@@ -2,7 +2,6 @@ from enum import IntEnum, Enum
 import sys
 sys.path.insert(0, '../')
 from pygeminirec.recordlinks import RecordLinks
-from pygeminirec.recordlinks import Result
 
 
 class BaseExecutor:
@@ -22,7 +21,7 @@ class BaseExecutor:
         print(f"Update CAD States top {self.prefix}")
         result, ret_mess = await self.set_state(**kwargs)
 
-        if result == Result.SUCCESS:
+        if result > 0:
             return await self.cads.execute_on_all('cads', 'set_state', reverse, **kwargs)
         else:
             return result, ret_mess, self

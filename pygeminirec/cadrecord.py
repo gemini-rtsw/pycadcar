@@ -7,7 +7,6 @@ import sys
 #try import locally for testing
 sys.path.insert(0, '../')
 from pygeminirec.applyrecord import ApplyRecord
-from pygeminirec.base import Result
 from pygeminirec.base import CARState
 from pygeminirec.base import CADDirective
 
@@ -48,7 +47,11 @@ class CADStateMachine:
     async def transition(self, event):
         print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
 
-        ret = Result.SUCCESS # success by default - if nothing processes SNAM its a success
+
+        print("HAWI fix this ret must be clid/val")
+        # success by default - if nothing processes SNAM its a success
+
+        ret = 1 
         ret_mess = ''
 
         if self.state == 0:
@@ -102,23 +105,23 @@ class CADRecord(ApplyRecord):
         
     async def mark(self):
         print("MARK")
-        return Result.SUCCESS, "Directive Processed Successfully"
+        return self.CLID.value, "Directive Processed Successfully"
 
     async def stop(self):
         print("STOP")
-        return Result.SUCCESS, "Directive Processed Successfully"
+        return self.CLID.value, "Directive Processed Successfully"
 
     async def clear(self):
         print("CLEAR")
-        return Result.SUCCESS, "Directive Processed Successfully"
+        return self.CLID.value, "Directive Processed Successfully"
 
     async def preset(self):
         print("PRESET")
-        return Result.SUCCESS, "Directive Processed Successfully"
+        return self.CLID.value, "Directive Processed Successfully"
 
     async def start(self):
         print("START")
-        return Result.SUCCESS, "Directive Processed Successfully"
+        return self.CLID.value, "Directive Processed Successfully"
 
     async def default_subroutine(self, event):
             if event == CADDirective.MARK:
@@ -154,12 +157,12 @@ class CADRecord(ApplyRecord):
         await self.MARK.write(self.state_machine.state)
         print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
 
-        if ret == Result.SUCCESS:
-            print(f"Completed Directive with SUCCESS set CAR to {CARState.IDLE} and all CADs to return {Result.SUCCESS}")
+        if ret > 0 :
+            print(f"Completed Directive with SUCCESS set CAR to {CARState.IDLE} and all CADs to return {ret}")
             await self.set_state(state = ret, message = ret_mess, clid = clid)
             await self.update_all_car_states(reverse = True, state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
         else:
-            print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with {Result.ERROR}")
+            print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with error")
             await self.set_state(val = ret, message = ret_mess, clid = clid)
             await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
 

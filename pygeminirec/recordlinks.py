@@ -2,10 +2,6 @@
 import sys
 from enum import IntEnum, Enum
 
-class Result(IntEnum):
-    ERROR = 0
-    SUCCESS = 1
-
 
 class RecordLinks:
     def __init__(self, parent=None):
@@ -25,6 +21,7 @@ class RecordLinks:
         # Determine the iteration order based on the reverse flag
         records_iterable = reversed(self.records) if reverse else self.records
 
+
         for record in records_iterable:
             print(f"Executing commands recursively on {record.prefix}")
 
@@ -34,21 +31,22 @@ class RecordLinks:
             # If not reversing, process the current record's command first (head recursion)
             if not reverse:
                 result, ret_mess = await self.process_current_record(record, command_func_name, **kwargs)
-                if result == Result.ERROR:
+                if result <= 0:
                     return result, ret_mess, record
 
             # Recursively call execute_on_all on the selected records_to_process
             recursive_result, recursive_message, _ = await records_to_process.execute_on_all(caller, command_func_name, reverse=reverse, **kwargs)
-            if recursive_result == Result.ERROR:
+            if recursive_result <= 0:
                 return recursive_result, recursive_message, record
 
             # If reversing, process the current record's command after the recursive call (tail recursion)
             if reverse:
                 result, ret_mess = await self.process_current_record(record, command_func_name, **kwargs)
-                if result == Result.ERROR:
+                if result <= 0:
                     return result, ret_mess, record
 
-        return Result.SUCCESS, "All sub records processed successfully", None
+        print("HAWI need to fix this 1 is returned but need to return val/clid")
+        return 1, "All sub records processed successfully", None
 
     async def process_current_record(self, record, command_func_name, **kwargs):
         # Retrieve and execute the command method on the current record
@@ -59,4 +57,4 @@ class RecordLinks:
                 return await command_method(**kwargs)
         else:
             print(f"Command function {command_func_name} does not exist on record {record}")
-            return Result.ERROR, "Method Not Found", record
+            return 0, "Method Not Found", record
