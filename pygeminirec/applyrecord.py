@@ -154,14 +154,15 @@ class ApplyRecord(PVGroup, BaseExecutor):
         loop.create_task(self.monitor_directive())
 
     async def monitor_directive(self):
-        last_value = None
+        last_timestamp = None
         while True:
-            current_value = self.DIR.value  # Assuming this fetches the current PV value directly
-            if current_value != last_value:
-                # If the value has changed, process the directive with the current value
+            current_value, current_timestamp = self.DIR.value, self.DIR.timestamp  # Fetch the current value and timestamp
+            if current_timestamp != last_timestamp:
+                # If the timestamp has changed, process the directive with the current value
                 await self.processDirective(current_value)
-                last_value = current_value  # Update last_value to the new value
+                last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
+
         
     async def set_state(self, **kwargs):
         # state - Result.ERROR or Result.SUCCESS
