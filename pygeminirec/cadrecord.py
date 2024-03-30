@@ -60,9 +60,13 @@ class CADStateMachine:
                 print(f"CAD state: {CADDirective.MARK}")
                 self.state = 1
                 ret, ret_mess = await self.funct_ptr(event)
+            elif event == CADDirective.START:
+                print(f"CAD state: {CADDirective.START}")
+                self.state = 1
+                ret, ret_mess = await self.funct_ptr(event)
 
         elif self.state == 1:
-            print("state 0")
+            print("state 1")
             if event == CADDirective.STOP or event == CADDirective.CLEAR:
                 print(f"CAD state: {CADDirective.STOP} or {CADDirective.CLEAR}")
                 self.state = 0
@@ -73,7 +77,7 @@ class CADStateMachine:
                 ret, ret_mess = await self.funct_ptr(event)
 
         elif self.state == 2:
-            print("state 0")
+            print("state 2")
             if event == 'CLEAR' or event == 'START' or event == 'STOP':
                 print(f"CAD state: {CADDirective.CLEAR} or {CADDirective.START} or {CADDirective.STOP}")
                 self.state = 0
