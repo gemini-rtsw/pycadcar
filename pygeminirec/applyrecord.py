@@ -191,7 +191,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
 
         print("Process Directive")
-        ret, ret_mess, ret_cad = await self.process_all_cad_directives(reverse = False, directive = value)
+        await self.process_all_cad_directives(reverse = False, directive = value)
 
 
 
