@@ -158,7 +158,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
             current_value, current_timestamp = self.DIR.value, self.DIR.timestamp  # Fetch the current value and timestamp
             if current_timestamp != last_timestamp:
                 # If the timestamp has changed, process the directive with the current value
-                await self.processDirective(current_value)
+                await self.process_apply_directive(current_value)
                 last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
  
@@ -174,9 +174,10 @@ class ApplyRecord(PVGroup, BaseExecutor):
         return self.CLID.value
 
 
-    async def processDirective(self, value):
+    async def process_apply_directive(self, value):
         print("-----------------------------------")
-        print(f'{self.prefix} Processing Directive')
+        print(f'{self.prefix} Processing Directive {value}')
+        print("-----------------------------------")
 
         # get the CLID and reset if it was set to error last directive
         clid = self.CLID.value
@@ -189,7 +190,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         print("Set CADs state")
         await self.update_all_cad_states(reverse = False, state = clid, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
-
+        print("####################################")
         print("Process Directive")
         await self.process_all_cad_directives(reverse = False, directive = value)
 
@@ -203,15 +204,12 @@ class ApplyRecord(PVGroup, BaseExecutor):
         name="DIR"
     )
 
-    #@DIR.putter
-#    async def DIR(self, instance, value):
- #       await self.DIRputter(instance, value)
+    @DIR.putter
+    async def DIR(self, instance, value):
+        await self.DIRputter(instance, value)
 
- #   async def DIRputter(self, instance, value):
- #       print(f"{self.prefix} Processing Sub Records: {[obj.__class__.__name__ for obj in self.cads.records]}")
-  #      self.pv_changed_event.set()
-      #  await self.processDirective(value)
- #       return value
+    async def DIRputter(self, instance, value):
+        print(f'{self.prefix}DIR value changed to: {value}')
     
 
 

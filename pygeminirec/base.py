@@ -26,7 +26,7 @@ class BaseExecutor:
     
     async def process_all_cad_directives(self, reverse, **kwargs):
         print(f"Process CAD Directives top {self.prefix}")
-        return await self.cads.execute_on_all('cads', 'process_directive', reverse, **kwargs)
+        return await self.cads.execute_on_all('cads', 'process_cad_directive', reverse, **kwargs)
         
     async def update_all_car_states(self, reverse, **kwargs):
         print(f"Updating CARs for {self.prefix}")
