@@ -48,7 +48,6 @@ class CADStateMachine:
         print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
 
 
-        print("HAWI fix this ret must be clid/val")
         # success by default - if nothing processes SNAM its a success
 
         ret = 1 
@@ -167,7 +166,7 @@ class CADRecord(ApplyRecord):
             await self.update_all_car_states(reverse = True, state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
         else:
             print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with error")
-            await self.set_state(val = ret, message = ret_mess, clid = clid)
+            await self.set_state(state = ret, message = ret_mess, clid = clid)
             await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
 
 
