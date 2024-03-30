@@ -171,7 +171,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.MESS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])  
 
-        return self.CLID.value, kwargs['message']
+        return self.CLID.value
 
 
     async def processDirective(self, value):
