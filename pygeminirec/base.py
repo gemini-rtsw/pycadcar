@@ -19,12 +19,10 @@ class BaseExecutor:
 
     async def update_all_cad_states(self, reverse, **kwargs):
         print(f"Update CAD States top {self.prefix}")
-        result, ret_mess = await self.set_state(**kwargs)
+        result = await self.set_state(**kwargs)
 
-        if result > 0:
-            return await self.cads.execute_on_all('cads', 'set_state', reverse, **kwargs)
-        else:
-            return result, ret_mess, self
+        return await self.cads.execute_on_all('cads', 'set_state', reverse, **kwargs)
+
     
     async def process_all_cad_directives(self, reverse, **kwargs):
         print(f"Process CAD Directives top {self.prefix}")
