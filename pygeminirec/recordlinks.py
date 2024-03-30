@@ -25,28 +25,27 @@ class RecordLinks:
         for record in records_iterable:
             print(f"Executing commands recursively on {record.prefix}")
 
-            # Depending on the caller, we select the appropriate RecordLinks instance
+            # Depending on the caller, we select the appropriate RecordLinks instance either cads or cars
             records_to_process = getattr(record, caller)
 
             # If not reversing, process the current record's command first (head recursion)
             if not reverse:
-                result, ret_mess = await self.process_current_record(record, command_func_name, **kwargs)
+                result = await self.process_current_record(record, command_func_name, **kwargs)
                 if result <= 0:
-                    return result, ret_mess, record
+                    return result
 
             # Recursively call execute_on_all on the selected records_to_process
-            recursive_result, recursive_message, _ = await records_to_process.execute_on_all(caller, command_func_name, reverse=reverse, **kwargs)
+            recursive_result = await records_to_process.execute_on_all(caller, command_func_name, reverse=reverse, **kwargs)
             if recursive_result <= 0:
-                return recursive_result, recursive_message, record
+                return recursive_result
 
             # If reversing, process the current record's command after the recursive call (tail recursion)
             if reverse:
-                result, ret_mess = await self.process_current_record(record, command_func_name, **kwargs)
+                result = await self.process_current_record(record, command_func_name, **kwargs)
                 if result <= 0:
-                    return result, ret_mess, record
+                    return result
 
-        print("HAWI need to fix this 1 is returned but need to return val/clid")
-        return 1, "All sub records processed successfully", None
+        return True
 
     async def process_current_record(self, record, command_func_name, **kwargs):
         # Retrieve and execute the command method on the current record
@@ -57,4 +56,4 @@ class RecordLinks:
                 return await command_method(**kwargs)
         else:
             print(f"Command function {command_func_name} does not exist on record {record}")
-            return 0, "Method Not Found", record
+            return False

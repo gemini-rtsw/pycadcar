@@ -173,7 +173,7 @@ class CADRecord(ApplyRecord):
             await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
 
 
-        return ret, ret_mess
+        return ret 
 
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
