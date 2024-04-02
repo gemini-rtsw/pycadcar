@@ -56,7 +56,7 @@ class CADStateMachine:
 
 
         print("++++++++++++++++++++++++++++++++++++++++++")
-        print("Executing CAD State Transition from State: {self.state} with Event: {event}")
+        print(f"Executing CAD State Transition from State: {self.state} with Event: {event}")
 
         if self.state == 0:
             if event == CADDirective.MARK:
