@@ -155,7 +155,7 @@ class CADRecord(ApplyRecord):
 
 
         print("-----------------------------------")
-        print(f"Processing CAD Directive {{self.prefix}} with ", kwargs)
+        print(f"Processing CAD Directive {self.prefix} with ", kwargs)
         # transition to next state and posibly execute subroutine for state
         #ret = await self.state_machine.transition(directive)
         await self.DIR.write(directive)
