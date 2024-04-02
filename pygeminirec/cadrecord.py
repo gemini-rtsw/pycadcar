@@ -157,9 +157,11 @@ class CADRecord(ApplyRecord):
         print("-----------------------------------")
         print(f"Processing CAD Directive {self.prefix} with {kwargs}")
         # transition to next state and posibly execute subroutine for state
-        #ret = await self.state_machine.transition(directive)
-        await self.DIR.write(directive)
-        ret = self.state_machine.result
+
+        ret = await self.state_machine.transition(directive)
+
+        #await self.DIR.write(directive)
+        #ret = self.state_machine.result
 
 
         await self.MARK.write(self.state_machine.state)
@@ -186,7 +188,7 @@ class CADRecord(ApplyRecord):
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
         print(f'{self.prefix}DIR value changed to: {value}')
-        await self.state_machine.transition(value)
+        #await self.state_machine.transition(value)
 
 
     
