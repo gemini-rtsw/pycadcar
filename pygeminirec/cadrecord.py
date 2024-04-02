@@ -54,36 +54,32 @@ class CADStateMachine:
 
         self.ret = True
 
+
+        print("++++++++++++++++++++++++++++++++++++++++++")
+        print("Executing CAD State Transition from State: {self.state} with Event: {event}")
+
         if self.state == 0:
-            print("state 0")
             if event == CADDirective.MARK:
-                print(f"CAD state: {CADDirective.MARK}")
                 self.state = 1
                 self.result = await self.funct_ptr(event)
 
         elif self.state == 1:
-            print("state 1")
             if event == CADDirective.STOP or event == CADDirective.CLEAR:
-                print(f"CAD state: {CADDirective.STOP} or {CADDirective.CLEAR}")
                 self.state = 0
                 self.result  = await self.funct_ptr(event)
             elif event == CADDirective.START or event == CADDirective.PRESET:
-                print(f"CAD state: {CADDirective.START} or {CADDirective.PRESET}")
                 self.state = 2
                 self.result = await self.funct_ptr(event)
 
         elif self.state == 2:
-            print("state 2")
-            if event == 'CLEAR' or event == 'START' or event == 'STOP':
-                print(f"CAD state: {CADDirective.CLEAR} or {CADDirective.START} or {CADDirective.STOP}")
+            if event == CADDirective.CLEAR or event == CADDirective.START or event == CADDirective.STOP:
                 self.state = 0
                 self.result = await self.funct_ptr(event)
-            elif event == 'MARK':
-                print(f"CAD state: {CADDirective.MARK}")
+            elif event == CADDirective.MARK:
                 self.state = 1
                 self.result = await self.funct_ptr(event)
 
-
+        print("++++++++++++++++++++++++++++++++++++++++++")
 
 
 
