@@ -65,30 +65,30 @@ class CADStateMachine:
         elif self.state == 1:
             if event == CADDirective.STOP:
                 self.state = 0
-                self.result  = await self.stop.stop()
+                self.result  = await self.cad.stop()
             elif event == CADDirective.CLEAR:
                 self.state = 0
-                self.result  = await self.stop.clear()                
+                self.result  = await self.cad.clear()                
             elif event == CADDirective.START:
                 self.state = 2
-                self.result = await self.stop.start()
+                self.result = await self.cad.start()
             elif event == CADDirective.PRESET:
                 self.state = 2
-                self.result = await self.stop.preset()
+                self.result = await self.cad.preset()
 
         elif self.state == 2:
             if event == CADDirective.CLEAR:
                 self.state = 0
-                self.result = await self.stop.clear()
+                self.result = await self.cad.clear()
             elif event == CADDirective.START:
                 self.state = 0
-                self.result = await self.stop.start()
+                self.result = await self.cad.start()
             elif event == CADDirective.STOP:
                 self.state = 0
-                self.result = await self.stop.stop()                                   
+                self.result = await self.cad.stop()                                   
             elif event == CADDirective.MARK:
                 self.state = 1
-                self.result = await self.stop.mark()
+                self.result = await self.cad.mark()
         print("++++++++++++++++++++++++++++++++++++++++++")
 
         return self.ret
@@ -155,10 +155,10 @@ class CADRecord(ApplyRecord):
         print(f"Processing CAD Directive {self.prefix} with {kwargs}")
         # transition to next state and posibly execute subroutine for state
 
-        ret = await self.state_machine.transition(directive)
+        #ret = await self.state_machine.transition(directive)
 
-        #await self.DIR.write(directive)
-        #ret = self.state_machine.result
+        await self.DIR.write(directive)
+        ret = self.state_machine.result
 
 
         await self.MARK.write(self.state_machine.state)
@@ -185,7 +185,7 @@ class CADRecord(ApplyRecord):
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
         print(f'{self.prefix}DIR value changed to: {value}')
-        #await self.state_machine.transition(value)
+        await self.state_machine.transition(value)
 
 
     
