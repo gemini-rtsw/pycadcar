@@ -78,10 +78,10 @@ class CADStateMachine:
             elif event == CADDirective.MARK:
                 self.state = 1
                 self.result = await self.funct_ptr(event)
+        print("++++++++++++++++++++++++++++++++++++++++++")
 
         return self.ret
 
-        print("++++++++++++++++++++++++++++++++++++++++++")
 
 
 
