@@ -79,6 +79,8 @@ class CADStateMachine:
                 self.state = 1
                 self.result = await self.funct_ptr(event)
 
+        return self.ret
+
         print("++++++++++++++++++++++++++++++++++++++++++")
 
 
