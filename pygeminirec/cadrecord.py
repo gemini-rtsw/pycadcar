@@ -42,7 +42,7 @@ from pygeminirec.base import CADDirective
 class CADStateMachine:
     def __init__(self):
         self.state = 0
-        self.funct_ptr = None
+        self.cad = None
         self.parent = None
         self.result = True
 
@@ -54,30 +54,41 @@ class CADStateMachine:
 
         self.ret = True
 
-
         print("++++++++++++++++++++++++++++++++++++++++++")
         print(f"Executing CAD State Transition from State: {self.state} with Event: {event}")
 
         if self.state == 0:
             if event == CADDirective.MARK:
                 self.state = 1
-                self.result = await self.funct_ptr(event)
+                self.result = await self.cad.mark()
 
         elif self.state == 1:
-            if event == CADDirective.STOP or event == CADDirective.CLEAR:
+            if event == CADDirective.STOP:
                 self.state = 0
-                self.result  = await self.funct_ptr(event)
-            elif event == CADDirective.START or event == CADDirective.PRESET:
+                self.result  = await self.stop.stop()
+            elif event == CADDirective.CLEAR:
+                self.state = 0
+                self.result  = await self.stop.clear()                
+            elif event == CADDirective.START:
                 self.state = 2
-                self.result = await self.funct_ptr(event)
+                self.result = await self.stop.start()
+            elif event == CADDirective.PRESET:
+                self.state = 2
+                self.result = await self.stop.preset()
 
         elif self.state == 2:
-            if event == CADDirective.CLEAR or event == CADDirective.START or event == CADDirective.STOP:
+            if event == CADDirective.CLEAR:
                 self.state = 0
-                self.result = await self.funct_ptr(event)
+                self.result = await self.stop.clear()
+            elif event == CADDirective.START:
+                self.state = 0
+                self.result = await self.stop.start()
+            elif event == CADDirective.STOP:
+                self.state = 0
+                self.result = await self.stop.stop()                                   
             elif event == CADDirective.MARK:
                 self.state = 1
-                self.result = await self.funct_ptr(event)
+                self.result = await self.stop.mark()
         print("++++++++++++++++++++++++++++++++++++++++++")
 
         return self.ret
@@ -96,47 +107,31 @@ class CADRecord(ApplyRecord):
         self.state_machine = CADStateMachine()
         self.state_machine.parent = self
         self.state_machine.state = 0
-        self.state_machine.funct_ptr = self.default_subroutine
-
+        self.state_machine.cad = self
 
 
 # Override these functions to implement CAD actions
 # note: they MUST call setSuccess or setError
         
     async def mark(self):
-        print("MARK")
-        await self.MESS.write("Directive Processed Successfully")
+        await self.MESS.write("MARK Directive Processed Successfully")
         return True
 
     async def stop(self):
-        await self.MESS.write("Directive Processed Successfully")
+        await self.MESS.write("STOP Directive Processed Successfully")
         return True
 
     async def clear(self):
-        await self.MESS.write("Directive Processed Successfully")
+        await self.MESS.write("CLEAR Directive Processed Successfully")
         return True
 
     async def preset(self):
-        await self.MESS.write("Directive Processed Successfully")
+        await self.MESS.write("PRESET Directive Processed Successfully")
         return True
 
     async def start(self):
-        await self.MESS.write("Directive Processed Successfully")
+        await self.MESS.write("START Directive Processed Successfully")
         return True
-
-
-    async def default_subroutine(self, event):
-            if event == CADDirective.MARK:
-                return await self.mark()
-            elif event == CADDirective.STOP:
-                return await self.stop()
-            elif event == CADDirective.CLEAR:
-                return await self.clear()
-            elif event == CADDirective.PRESET:
-                return await self.preset()
-            elif event == CADDirective.START:
-                return await self.start()
-
 
 
     async def process_cad_directive(self, **kwargs):
