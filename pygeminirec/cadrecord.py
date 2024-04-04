@@ -45,22 +45,22 @@ class CADStateMachine:
         self.cad = cad
         # Defining the state transition table
         self.transitions = {
-            (0, CADDirective.MARK): (1, self.cad.mark),
-            (0, CADDirective.CLEAR): (0, self.cad.clear),
-            (1, CADDirective.MARK): (1, self.cad.mark),
-            (1, CADDirective.CLEAR): (0, self.cad.clear),
+            (0, CADDirective.MARK):   (1, self.cad.mark),
+            (0, CADDirective.CLEAR):  (0, self.cad.clear),
+            (1, CADDirective.MARK):   (1, self.cad.mark),
+            (1, CADDirective.CLEAR):  (0, self.cad.clear),
             (1, CADDirective.PRESET): (2, self.cad.preset),
-            (1, CADDirective.START): (2, self.cad.start),
-            (1, CADDirective.STOP): (0, self.cad.stop),
-            (2, CADDirective.MARK): (1, self.cad.mark),
-            (2, CADDirective.CLEAR): (0, self.cad.clear),
+            (1, CADDirective.START):  (2, self.cad.start),
+            (1, CADDirective.STOP):   (0, self.cad.stop),
+            (2, CADDirective.MARK):   (1, self.cad.mark),
+            (2, CADDirective.CLEAR):  (0, self.cad.clear),
             (2, CADDirective.PRESET): (2, self.cad.preset),
-            (2, CADDirective.START): (0, self.cad.start),
-            (2, CADDirective.STOP): (0, self.cad.stop),
+            (2, CADDirective.START):  (0, self.cad.start),
+            (2, CADDirective.STOP):   (0, self.cad.stop),
             # For no-op events, map to self state with None action
             (0, CADDirective.PRESET): (0, None),
-            (0, CADDirective.START): (0, None),
-            (0, CADDirective.STOP): (0, None),
+            (0, CADDirective.START):  (0, None),
+            (0, CADDirective.STOP):   (0, None),
         }
 
     async def transition(self, event):
