@@ -40,58 +40,45 @@ from pygeminirec.base import CADDirective
 
 # State Machine
 class CADStateMachine:
-    def __init__(self):
+    def __init__(self, cad):
         self.state = 0
-        self.cad = None
-        self.parent = None
-        self.result = True
+        self.cad = cad
+        # Defining the state transition table
+        self.transitions = {
+            (0, CADDirective.MARK): (1, self.cad.mark),
+            (0, CADDirective.CLEAR): (0, self.cad.clear),
+            (1, CADDirective.MARK): (1, self.cad.mark),
+            (1, CADDirective.CLEAR): (0, self.cad.clear),
+            (1, CADDirective.PRESET): (2, self.cad.preset),
+            (1, CADDirective.START): (2, self.cad.start),
+            (1, CADDirective.STOP): (0, self.cad.stop),
+            (2, CADDirective.MARK): (1, self.cad.mark),
+            (2, CADDirective.CLEAR): (0, self.cad.clear),
+            (2, CADDirective.PRESET): (2, self.cad.preset),
+            (2, CADDirective.START): (0, self.cad.start),
+            (2, CADDirective.STOP): (0, self.cad.stop),
+            # For no-op events, map to self state with None action
+            (0, CADDirective.PRESET): (0, None),
+            (0, CADDirective.START): (0, None),
+            (0, CADDirective.STOP): (0, None),
+        }
 
     async def transition(self, event):
-        print(f"CAD state transition and subroutine execution: state: {self.state} event: {event}")
+        # Lookup the event in the transition table
+        action_info = self.transitions.get((self.state, event))
 
+        if action_info is not None:
+            next_state, action = action_info
+            self.state = next_state  # Transition to the next state
 
-        # success by default - if nothing processes SNAM its a success
-
-        self.ret = True
-
-        print("++++++++++++++++++++++++++++++++++++++++++")
-        print(f"Executing CAD State Transition from State: {self.state} with Event: {event}")
-
-        if self.state == 0:
-            if event == CADDirective.MARK:
-                self.state = 1
-                self.result = await self.cad.mark()
-
-        elif self.state == 1:
-            if event == CADDirective.STOP:
-                self.state = 0
-                self.result  = await self.cad.stop()
-            elif event == CADDirective.CLEAR:
-                self.state = 0
-                self.result  = await self.cad.clear()                
-            elif event == CADDirective.START:
-                self.state = 2
-                self.result = await self.cad.start()
-            elif event == CADDirective.PRESET:
-                self.state = 2
-                self.result = await self.cad.preset()
-
-        elif self.state == 2:
-            if event == CADDirective.CLEAR:
-                self.state = 0
-                self.result = await self.cad.clear()
-            elif event == CADDirective.START:
-                self.state = 0
-                self.result = await self.cad.start()
-            elif event == CADDirective.STOP:
-                self.state = 0
-                self.result = await self.cad.stop()                                   
-            elif event == CADDirective.MARK:
-                self.state = 1
-                self.result = await self.cad.mark()
-        print("++++++++++++++++++++++++++++++++++++++++++")
-
-        return self.ret
+            if action:  # If there's an action defined, perform it
+                await action()
+                return True
+            else:
+                return True  # No action needed, but transition is successful
+        else:
+            print(f"No transition defined for state {self.state} and event {event}.")
+            return False
 
 
 
