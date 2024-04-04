@@ -91,10 +91,9 @@ class CADRecord(ApplyRecord):
         PVGroup.__init__(self, *args, **kwargs)  # Explicitly call PVGroup's constructor
         BaseExecutor.__init__(self)  # Explicitly call BaseExecutor's constructor
     
-        self.state_machine = CADStateMachine()
+        self.state_machine = CADStateMachine(self)
         self.state_machine.parent = self
         self.state_machine.state = 0
-        self.state_machine.cad = self
 
 
 # Override these functions to implement CAD actions
