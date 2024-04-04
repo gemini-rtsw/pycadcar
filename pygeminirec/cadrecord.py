@@ -177,7 +177,7 @@ class CADRecord(ApplyRecord):
             print("Set CARs to ERROR")
             print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with error")
             await self.VAL.write(ret)
-            await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
+            await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"{self.MESS.value}", clid = clid)
 
 
         return ret 
