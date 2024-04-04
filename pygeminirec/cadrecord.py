@@ -43,6 +43,8 @@ class CADStateMachine:
     def __init__(self, cad):
         self.state = 0
         self.cad = cad
+
+        self.result = True
         # Defining the state transition table
         self.transitions = {
             (0, CADDirective.MARK):   (1, self.cad.mark),
@@ -64,21 +66,30 @@ class CADStateMachine:
         }
 
     async def transition(self, event):
+        print("++++++++++++++++++++++++++++++++++++++++++")
+        print(f"Executing CAD State Transition from State: {self.state} with Event: {event}")
+
         # Lookup the event in the transition table
         action_info = self.transitions.get((self.state, event))
+
 
         if action_info is not None:
             next_state, action = action_info
             self.state = next_state  # Transition to the next state
 
             if action:  # If there's an action defined, perform it
+                print(f"Action for state {self.state} and event {event}: {action}")
                 await action()
-                return True
+                print("++++++++++++++++++++++++++++++++++++++++++")
+                self.result = True
             else:
-                return True  # No action needed, but transition is successful
+                print(f"No action for state {self.state} and event {event}.")
+                print("++++++++++++++++++++++++++++++++++++++++++")
+                self.result = True  # No action needed, but transition is successful
         else:
             print(f"No transition defined for state {self.state} and event {event}.")
-            return False
+            print("++++++++++++++++++++++++++++++++++++++++++")
+            self.result = False
 
 
 
