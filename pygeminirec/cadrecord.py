@@ -79,9 +79,9 @@ class CADStateMachine:
 
             if action:  # If there's an action defined, perform it
                 print(f"Action for state {self.state} and event {event}: {action}")
-                await action()
+                res = await action()
                 print("++++++++++++++++++++++++++++++++++++++++++")
-                self.result = True
+                self.result = res
             else:
                 print(f"No action for state {self.state} and event {event}.")
                 print("++++++++++++++++++++++++++++++++++++++++++")
