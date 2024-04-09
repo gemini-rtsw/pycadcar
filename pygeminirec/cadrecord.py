@@ -78,7 +78,7 @@ class CADStateMachine:
             self.state = next_state  # Transition to the next state
 
             if action:  # If there's an action defined, perform it
-                print(f"Action for state {self.state} and event {event}: {action}")
+                print(f"Action for state {self.state} and event {event}: {action.__self__.__class__.__name__}.{action.__name__}")
                 res = await action()
                 print("++++++++++++++++++++++++++++++++++++++++++")
                 self.result = res
@@ -160,6 +160,13 @@ class CADRecord(ApplyRecord):
 
         await self.MARK.write(self.state_machine.state)
         print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
+
+
+
+        if ret is None:
+            # Handle the unexpected None case. For example, log an error and set a default error value.
+            print("Warning: ret is None, which is unexpected. Defaulting to error state.")
+            ret = -1  # Default error value or appropriate handling
 
         if ret == True :
             #on success CAD.VAL == CAD.CLID
