@@ -157,9 +157,11 @@ class ApplyRecord(PVGroup, BaseExecutor):
         while True:
             current_value, current_timestamp = self.DIR.value, self.DIR.timestamp  # Fetch the current value and timestamp
 
-            idle = await self.are_all_cars_idle()
 
             if current_timestamp != last_timestamp:
+                
+                idle = await self.are_all_cars_idle()
+
                 if idle:
                     # If the timestamp has changed, process the directive with the current value
                     await self.process_apply_directive(current_value)
