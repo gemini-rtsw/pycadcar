@@ -1,0 +1,8 @@
+stages:
+  - deploy
+
+trigger_gnirsdc_data_manager:
+  stage: deploy
+  trigger:
+    project: nsf-noirlab/gemini/rtsw/iocs/gnirsdc-data-manager
+    branch: master
