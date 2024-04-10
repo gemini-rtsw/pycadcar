@@ -103,9 +103,9 @@ class CARRecord(PVGroup, BaseExecutor):
     async def is_idle(self, **kwargs):
 
         if (self.VAL.value == CARState.IDLE):
-            return True, "CAR Idle"
+            return True
         
-        return False, "CAR Not Idle"
+        return False
 
 
     VAL = pvproperty(
