@@ -157,7 +157,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         while True:
             current_value, current_timestamp = self.DIR.value, self.DIR.timestamp  # Fetch the current value and timestamp
 
-            idle = self.are_all_cars_idle()
+            idle = await self.are_all_cars_idle()
 
             if current_timestamp != last_timestamp:
                 if idle:
