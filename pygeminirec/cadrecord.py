@@ -78,7 +78,6 @@ class CADStateMachine:
 
         if action_info is not None:
             next_state, action = action_info
-            self.state = next_state  # Transition to the next state
 
             if action:  # If there's an action defined, perform it
                 print(f"Action for state {self.state} and event {event}: {action.__self__.__class__.__name__}.{action.__name__}")
@@ -89,6 +88,8 @@ class CADStateMachine:
                 print(f"No action for state {self.state} and event {event}.")
                 print("++++++++++++++++++++++++++++++++++++++++++")
                 self.result = True  # No action needed, but transition is successful
+
+            self.state = next_state  # Transition to the next state
         else:
             print(f"No transition defined for state {self.state} and event {event}.")
             print("++++++++++++++++++++++++++++++++++++++++++")
