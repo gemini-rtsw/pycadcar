@@ -98,6 +98,14 @@ class CARRecord(PVGroup, BaseExecutor):
         await self.VAL.write(kwargs['state'])
 
         return self.CLID.value
+    
+
+    async def is_idle(self, **kwargs):
+
+        if (self.VAL.value == CARState.IDLE):
+            return True, "CAR Idle"
+        else:
+            return False, "CAR Not Idle"
 
 
     VAL = pvproperty(

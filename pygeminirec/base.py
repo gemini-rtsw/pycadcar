@@ -32,14 +32,22 @@ class BaseExecutor:
         print(f"Updating CARs for {self.prefix}")
         return await self.cars.execute_on_all('cars', 'set_state', reverse, **kwargs)
 
+    async def are_all_cars_idle(self):
+        print(f"Checking CARs for IDLE State")
+        return await self.cars.execute_on_all('cars', 'is_idle')
+    
 
     async def set_state(self, **kwargs):
-        print("Setting state ", kwargs)
+        print("Setting State ", kwargs)
         return True, "Set State"
 
     async def process_directive(self, **kwargs):
         print("Setting state ", kwargs)
         return True, "Set State"
+    
+    async def is_idle(self, **kwargs):
+        print("Get Is Idle ", kwargs)
+        return True, "Get Is Idle"
     
 
 

@@ -156,10 +156,17 @@ class ApplyRecord(PVGroup, BaseExecutor):
         last_timestamp = None
         while True:
             current_value, current_timestamp = self.DIR.value, self.DIR.timestamp  # Fetch the current value and timestamp
+
+            idle = self.are_all_cars_idle()
+
             if current_timestamp != last_timestamp:
-                # If the timestamp has changed, process the directive with the current value
-                await self.process_apply_directive(current_value)
-                last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
+                if idle:
+                    # If the timestamp has changed, process the directive with the current value
+                    await self.process_apply_directive(current_value)
+                    last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
+                else:
+                    print("Not executing Directive: Not all CARs are IDLE")
+
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
  
     async def set_state(self, **kwargs):
