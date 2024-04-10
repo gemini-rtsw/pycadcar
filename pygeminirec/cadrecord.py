@@ -27,7 +27,7 @@ from pygeminirec.base import CADDirective
 #       1         |  MARK   |     1      |       yes
 #       1         |  CLEAR  |     0      |       yes
 #       1         |  PRESET |     2      |       yes
-#       1         |  START  |     2      |       yes
+#       1         |  START  |     0      |       yes   * official docs say: #       1         |  START  |     2      |       yes
 #       1         |  STOP   |     0      |       yes
 # ----------------|---------|------------|-----------------
 #       2         |  MARK   |     1      |       yes
@@ -52,7 +52,7 @@ class CADStateMachine:
             (1, CADDirective.MARK):   (1, self.cad.mark),
             (1, CADDirective.CLEAR):  (0, self.cad.clear),
             (1, CADDirective.PRESET): (2, self.cad.preset),
-            (1, CADDirective.START):  (2, self.cad.start),
+            (1, CADDirective.START):  (0, self.cad.start),
             (1, CADDirective.STOP):   (0, self.cad.stop),
             (2, CADDirective.MARK):   (1, self.cad.mark),
             (2, CADDirective.CLEAR):  (0, self.cad.clear),
