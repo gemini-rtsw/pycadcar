@@ -14,7 +14,7 @@ from pygeminirec.base import CADDirective
 
 
 
-# State Table
+# State Table - see figure 2 in Gemini Record Reference Manual
 #
 #  Current State  |  Event  | Next State |  SNAME and links
 # ----------------|---------|------------|-----------------
@@ -27,7 +27,7 @@ from pygeminirec.base import CADDirective
 #       1         |  MARK   |     1      |       yes
 #       1         |  CLEAR  |     0      |       yes
 #       1         |  PRESET |     2      |       yes
-#       1         |  START  |     0      |       yes   * official docs say: #       1         |  START  |     2      |       yes
+#       1         |  START  |     0      |       yes   (*) 
 #       1         |  STOP   |     0      |       yes
 # ----------------|---------|------------|-----------------
 #       2         |  MARK   |     1      |       yes
@@ -35,8 +35,11 @@ from pygeminirec.base import CADDirective
 #       2         |  PRESET |     2      |       yes
 #       2         |  START  |     0      |       yes
 #       2         |  STOP   |     0      |       yes
+# 
 #
-#see figure 2 in Gemini Record Reference Manual
+# (*) official docs say:  1 |  START  | 2 | yes 
+#     however that state stransition didnt work 
+#     with seqexec
 
 # State Machine
 class CADStateMachine:
