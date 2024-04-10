@@ -32,9 +32,9 @@ class BaseExecutor:
         print(f"Updating CARs for {self.prefix}")
         return await self.cars.execute_on_all('cars', 'set_state', reverse, **kwargs)
 
-    async def are_all_cars_idle(self):
+    async def are_all_cars_idle(self, **kwargs):
         print(f"Checking CARs for IDLE State")
-        return await self.cars.execute_on_all('cars', 'is_idle')
+        return await self.cars.execute_on_all('cars', 'is_idle', **kwargs)
     
 
     async def set_state(self, **kwargs):
