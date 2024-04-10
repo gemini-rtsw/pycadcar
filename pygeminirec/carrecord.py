@@ -104,8 +104,8 @@ class CARRecord(PVGroup, BaseExecutor):
 
         if (self.VAL.value == CARState.IDLE):
             return True, "CAR Idle"
-        else:
-            return False, "CAR Not Idle"
+        
+        return False, "CAR Not Idle"
 
 
     VAL = pvproperty(

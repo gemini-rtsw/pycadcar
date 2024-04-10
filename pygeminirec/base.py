@@ -39,15 +39,15 @@ class BaseExecutor:
 
     async def set_state(self, **kwargs):
         print("Setting State ", kwargs)
-        return True, "Set State"
+        return True
 
     async def process_directive(self, **kwargs):
         print("Setting state ", kwargs)
-        return True, "Set State"
+        return True
     
     async def is_idle(self, **kwargs):
         print("Get Is Idle ", kwargs)
-        return True, "Get Is Idle"
+        return True
     
 
 

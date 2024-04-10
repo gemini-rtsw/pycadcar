@@ -54,6 +54,6 @@ class RecordLinks:
             if callable(command_method):
                 print(f"Executing command on {record.prefix}")
                 return await command_method(**kwargs)
-        else:
-            print(f"Command function {command_func_name} does not exist on record {record}")
-            return False
+        
+        print(f"Command function {command_func_name} does not exist on record {record}")
+        return False
