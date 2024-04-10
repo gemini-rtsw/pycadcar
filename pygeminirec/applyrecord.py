@@ -159,10 +159,11 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
 
             if current_timestamp != last_timestamp:
-                
+
                 idle = await self.are_all_cars_idle()
 
-                if idle:
+                if idle or self.DIR.value == CADDirective.PRESET:
+                    
                     # If the timestamp has changed, process the directive with the current value
                     await self.process_apply_directive(current_value)
                     last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
