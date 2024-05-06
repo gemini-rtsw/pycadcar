@@ -2,6 +2,11 @@
 import sys
 from enum import IntEnum, Enum
 
+debug_mode = False
+
+def debug_print(message):
+    if debug_mode:
+        debug_print("DEBUG:", message)
 
 class RecordLinks:
     def __init__(self, parent=None):
@@ -23,7 +28,7 @@ class RecordLinks:
 
 
         for record in records_iterable:
-            print(f"Executing commands recursively on {record.prefix}")
+            debug_print(f"Executing commands recursively on {record.prefix}")
 
             # Depending on the caller, we select the appropriate RecordLinks instance either cads or cars
             records_to_process = getattr(record, caller)
@@ -52,8 +57,8 @@ class RecordLinks:
         if hasattr(record, command_func_name):
             command_method = getattr(record, command_func_name)
             if callable(command_method):
-                print(f"Executing command on {record.prefix}")
+                debug_print(f"Executing command on {record.prefix}")
                 return await command_method(**kwargs)
         
-        print(f"Command function {command_func_name} does not exist on record {record}")
+        debug_print(f"Command function {command_func_name} does not exist on record {record}")
         return False

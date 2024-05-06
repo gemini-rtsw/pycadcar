@@ -15,6 +15,7 @@ from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CADDirective
 from pygeminirec.base import CARState
 
+from pygeminirec.recordlinks import debug_print
 
 
     # This implements Java ACM code as of 2024 March
@@ -168,7 +169,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
                     await self.process_apply_directive(current_value)
                     last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
                 else:
-                    print("Not executing Directive: Not all CARs are IDLE")
+                    debug_print("Not executing Directive: Not all CARs are IDLE")
 
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
  
@@ -176,7 +177,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         # state - SUCCESS > 0 ERROR <= 0
         # message
         # clid
-        print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} MESS={kwargs["message"]}')
+        debug_print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} MESS={kwargs["message"]}')
         await self.CLID.write(kwargs['clid'])
         await self.MESS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])  
@@ -185,9 +186,9 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
 
     async def process_apply_directive(self, value):
-        print("-----------------------------------")
-        print(f'{self.prefix} Processing Directive {value}')
-        print("-----------------------------------")
+        debug_print("-----------------------------------")
+        debug_print(f'{self.prefix} Processing Directive {value}')
+        debug_print("-----------------------------------")
 
         # get the CLID and reset if it was set to error last directive
         clid = self.CLID.value
@@ -196,12 +197,12 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
         # increment CLID to start a new directive
         clid = clid + 1
-        print("++++++++++++++++++++++++++++++++++++")
-        print("Set CADs state")
+        debug_print("++++++++++++++++++++++++++++++++++++")
+        debug_print("Set CADs state")
         await self.update_all_cad_states(reverse = False, state = clid, message = f"Processing Directive {self.prefix}DIR = {value}", clid = clid)
 
-        print("####################################")
-        print("Process Directive")
+        debug_print("####################################")
+        debug_print("Process Directive")
         await self.process_all_cad_directives(reverse = False, directive = value)
 
 
@@ -219,7 +220,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.DIRputter(instance, value)
 
     async def DIRputter(self, instance, value):
-        print(f'{self.prefix}DIR value changed to: {value}')
+        debug_print(f'{self.prefix}DIR value changed to: {value}')
     
 
 
@@ -235,7 +236,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.VALputter(instance, value)
 
     async def VALputter(self, instance, value):
-        print(f'{self.prefix}VAL value changed to: {value}')
+        debug_print(f'{self.prefix}VAL value changed to: {value}')
 
 
 
@@ -246,7 +247,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.CLIDputter(instance, value)
 
     async def CLIDputter(self, instance, value):
-        print(f'{self.prefix}CLID value changed to: {value}')
+        debug_print(f'{self.prefix}CLID value changed to: {value}')
 
 
     # ------------------ MESS  ------------------------- 
@@ -256,7 +257,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
         await self.MESSputter(instance, value)
 
     async def MESSputter(self, instance, value):
-        print(f'{self.prefix}MESS value changed to: {value}')
+        debug_print(f'{self.prefix}MESS value changed to: {value}')
 
 
 

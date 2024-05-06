@@ -2,6 +2,8 @@ from enum import IntEnum, Enum
 import sys
 sys.path.insert(0, '../')
 from pygeminirec.recordlinks import RecordLinks
+from pygeminirec.recordlinks import debug_print
+
 
 
 class BaseExecutor:
@@ -18,35 +20,35 @@ class BaseExecutor:
     #                         it processes on CARs only
 
     async def update_all_cad_states(self, reverse, **kwargs):
-        print(f"Update CAD States top {self.prefix}")
+        debug_print(f"Update CAD States top {self.prefix}")
         result = await self.set_state(**kwargs)
 
         return await self.cads.execute_on_all('cads', 'set_state', reverse, **kwargs)
 
     
     async def process_all_cad_directives(self, reverse, **kwargs):
-        print(f"Process CAD Directives top {self.prefix}")
+        debug_print(f"Process CAD Directives top {self.prefix}")
         return await self.cads.execute_on_all('cads', 'process_cad_directive', reverse, **kwargs)
         
     async def update_all_car_states(self, reverse, **kwargs):
-        print(f"Updating CARs for {self.prefix}")
+        debug_print(f"Updating CARs for {self.prefix}")
         return await self.cars.execute_on_all('cars', 'set_state', reverse, **kwargs)
 
     async def are_all_cars_idle(self, **kwargs):
-        print(f"Checking CARs for IDLE State")
+        debug_print(f"Checking CARs for IDLE State")
         return await self.cars.execute_on_all('cars', 'is_idle', **kwargs)
     
 
     async def set_state(self, **kwargs):
-        print("Setting State ", kwargs)
+        debug_print("Setting State ", kwargs)
         return True
 
     async def process_directive(self, **kwargs):
-        print("Setting state ", kwargs)
+        debug_print("Setting state ", kwargs)
         return True
     
     async def is_idle(self, **kwargs):
-        print("Get Is Idle ", kwargs)
+        debug_print("Get Is Idle ", kwargs)
         return True
     
 

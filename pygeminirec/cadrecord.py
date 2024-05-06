@@ -11,6 +11,7 @@ from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CARState
 from pygeminirec.base import CADDirective
 
+from pygeminirec.recordlinks import debug_print
 
 
 
@@ -69,8 +70,8 @@ class CADStateMachine:
         }
 
     async def transition(self, event):
-        print("++++++++++++++++++++++++++++++++++++++++++")
-        print(f"Executing CAD State Transition from State: {self.state} with Event: {event}")
+        debug_print("++++++++++++++++++++++++++++++++++++++++++")
+        debug_print(f"Executing CAD State Transition from State: {self.state} with Event: {event}")
 
         # Lookup the event in the transition table
         action_info = self.transitions.get((self.state, event))
@@ -80,19 +81,19 @@ class CADStateMachine:
             next_state, action = action_info
 
             if action:  # If there's an action defined, perform it
-                print(f"Action for state {self.state} and event {event}: {action.__self__.__class__.__name__}.{action.__name__}")
+                debug_print(f"Action for state {self.state} and event {event}: {action.__self__.__class__.__name__}.{action.__name__}")
                 res = await action()
-                print("++++++++++++++++++++++++++++++++++++++++++")
+                debug_print("++++++++++++++++++++++++++++++++++++++++++")
                 self.result = res
             else:
-                print(f"No action for state {self.state} and event {event}.")
-                print("++++++++++++++++++++++++++++++++++++++++++")
+                debug_print(f"No action for state {self.state} and event {event}.")
+                debug_print("++++++++++++++++++++++++++++++++++++++++++")
                 self.result = True  # No action needed, but transition is successful
 
             self.state = next_state  # Transition to the next state
         else:
-            print(f"No transition defined for state {self.state} and event {event}.")
-            print("++++++++++++++++++++++++++++++++++++++++++")
+            debug_print(f"No transition defined for state {self.state} and event {event}.")
+            debug_print("++++++++++++++++++++++++++++++++++++++++++")
             self.result = False
 
 
@@ -141,19 +142,19 @@ class CADRecord(ApplyRecord):
         directive = kwargs['directive']
 
         # IDLE signals we are about to process directive
-        print("-----------------------------------")
-        print("Set CARs to IDLE")
+        debug_print("-----------------------------------")
+        debug_print("Set CARs to IDLE")
         await self.update_all_car_states(reverse = True, state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
 
 
         # CAD sets it's CAR state to BUSY, which will in turn process any sub CARs
-        print("-----------------------------------")
-        print("Set CARs to BUSY")
+        debug_print("-----------------------------------")
+        debug_print("Set CARs to BUSY")
         await self.update_all_car_states(reverse = False, state = CARState.BUSY, message = f"Processing Directive BUSY {self.prefix}DIR = {directive}", clid = clid)
 
 
-        print("-----------------------------------")
-        print(f"Processing CAD Directive {self.prefix} with {kwargs}")
+        debug_print("-----------------------------------")
+        debug_print(f"Processing CAD Directive {self.prefix} with {kwargs}")
         # transition to next state and posibly execute subroutine for state
 
         #ret = await self.state_machine.transition(directive)
@@ -163,27 +164,27 @@ class CADRecord(ApplyRecord):
 
 
         await self.MARK.write(self.state_machine.state)
-        print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
+        debug_print(f'{self.prefix}CAD state is now: {self.state_machine.state}')
 
 
 
         if ret is None:
             # Handle the unexpected None case. For example, log an error and set a default error value.
-            print("Warning: ret is None, which is unexpected. Defaulting to error state.")
+            debug_print("Warning: ret is None, which is unexpected. Defaulting to error state.")
             ret = -1  # Default error value or appropriate handling
 
         if ret == True :
             #on success CAD.VAL == CAD.CLID
-            print("-----------------------------------")
-            print("Set CARs to IDLE")
-            print(f"Completed Directive with SUCCESS set CAR to {CARState.IDLE} and all CADs to return {clid}")
+            debug_print("-----------------------------------")
+            debug_print("Set CARs to IDLE")
+            debug_print(f"Completed Directive with SUCCESS set CAR to {CARState.IDLE} and all CADs to return {clid}")
             await self.VAL.write(clid)
             await self.update_all_car_states(reverse = True, state = CARState.IDLE, message = f"Processing Directive IDLE {self.prefix}DIR = {directive}", clid = clid)
         else:
             #on error CAD.VAL <= 0
-            print("-----------------------------------")
-            print("Set CARs to ERROR")
-            print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with error")
+            debug_print("-----------------------------------")
+            debug_print("Set CARs to ERROR")
+            debug_print(f"Completed Directive with ERROR set CAR to {CARState.ERR} and update failed CAD with error")
             await self.VAL.write(ret)
             await self.update_all_car_states(reverse = True, state = CARState.ERR, message = f"{self.MESS.value}", clid = clid)
 
@@ -192,7 +193,7 @@ class CADRecord(ApplyRecord):
 
     # ------------------  DIR -------------------------
     async def DIRputter(self, instance, value):
-        print(f'{self.prefix}DIR value changed to: {value}')
+        debug_print(f'{self.prefix}DIR value changed to: {value}')
         await self.state_machine.transition(value)
 
 

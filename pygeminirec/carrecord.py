@@ -8,6 +8,8 @@ from pygeminirec.applyrecord import ApplyRecord
 from pygeminirec.base import BaseExecutor
 from pygeminirec.base import CARState
 
+from pygeminirec.recordlinks import debug_print
+
 # State Table
 #
 #  Current State  |  Event       | Next State
@@ -92,7 +94,7 @@ class CARRecord(PVGroup, BaseExecutor):
         # state - CARState
         # message
         # clid
-        print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} OMSS={kwargs["message"]}')
+        debug_print(f'Updating Sub {self.prefix} VAL={kwargs["state"]} CLID={kwargs["clid"]} OMSS={kwargs["message"]}')
         await self.CLID.write(kwargs['clid'])
         await self.OMSS.write(kwargs['message'])
         await self.VAL.write(kwargs['state'])
@@ -122,7 +124,7 @@ class CARRecord(PVGroup, BaseExecutor):
         await self.CLIDputter(instance, value)
 
     async def CLIDputter(self, instance, value):
-        print(f'{self.prefix}CLID value changed to: {value}')
+        debug_print(f'{self.prefix}CLID value changed to: {value}')
 
 
 
@@ -131,10 +133,10 @@ class CARRecord(PVGroup, BaseExecutor):
     @VAL.startup
     async def VAL(self, instance, async_lib):
         # This function will be called when the IOC starts up.
-        print(f'{self.prefix}VAL pvproperty has started.')
+        debug_print(f'{self.prefix}VAL pvproperty has started.')
 
     @VAL.putter
     async def VAL(self, instance, value):
-        print(f'{self.prefix}VAL value changed to: {value}')
+        debug_print(f'{self.prefix}VAL value changed to: {value}')
 
         return value
