@@ -153,6 +153,9 @@ class ApplyRecord(PVGroup, BaseExecutor):
         loop = asyncio.get_event_loop()
         loop.create_task(self.monitor_directive())
 
+        preset = False
+
+
     async def monitor_directive(self):
         last_timestamp = None
         while True:
@@ -163,12 +166,16 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
                 idle = await self.are_all_cars_idle()
 
-                if idle or self.DIR.value == CADDirective.PRESET:
-                    
+                if idle or self.preset:
+                    self.preset = False         # preset is a special case, normally DIR is set in process_apply_directive
+                                                # if a command errors out, we need to force the preset to update directives
+                                                # because cads will not be idle, they will be in error
+
                     # If the timestamp has changed, process the directive with the current value
                     await self.process_apply_directive(current_value)
                     last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
                 else:
+                    last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
                     debug_print("Not executing Directive: Not all CARs are IDLE")
 
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
@@ -219,7 +226,10 @@ class ApplyRecord(PVGroup, BaseExecutor):
     async def DIR(self, instance, value):
         await self.DIRputter(instance, value)
 
+
     async def DIRputter(self, instance, value):
+        if value == CADDirective.PRESET:
+            self.preset = True
         debug_print(f'{self.prefix}DIR value changed to: {value}')
     
 
