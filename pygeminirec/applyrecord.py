@@ -170,7 +170,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
                 abort_cad = self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
 
                 abort = False
-                if abort_cad != None and abort_cad.DIR == CADDirective.MARK:
+                if abort_cad != None and abort_cad.DIR == 0: # CADDirective.MARK:
                     abort = True
 
 
