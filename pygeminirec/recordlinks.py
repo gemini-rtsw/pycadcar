@@ -21,7 +21,17 @@ class RecordLinks:
 
     def get_by_declaration_name(self, name):
         caller_frame = inspect.currentframe().f_back
-        return caller_frame.f_locals.get(name)   
+        locals_in_caller = caller_frame.f_locals
+        for obj_name, obj in locals_in_caller.items():
+            if obj_name == name and obj in self.records:
+                return obj
+        return None  
+
+    def get_idle_override(self):
+        for record in self.records:
+            if record.idle_override == True:
+                return record
+        return None
 
 
 # only implemented for one layer of CAD/CAR any more need work
