@@ -1,5 +1,6 @@
 
 import sys
+import inspect
 from enum import IntEnum, Enum
 
 debug_mode = False
@@ -17,6 +18,10 @@ class RecordLinks:
     
     async def add_record_link(self, record):
         self.records.append(record)
+
+    def get_by_declaration_name(self, name):
+        caller_frame = inspect.currentframe().f_back
+        return caller_frame.f_locals.get(name)   
 
 
 # only implemented for one layer of CAD/CAR any more need work

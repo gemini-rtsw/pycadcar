@@ -50,6 +50,9 @@ class BaseExecutor:
     async def is_idle(self, **kwargs):
         debug_print("Get Is Idle ", kwargs)
         return True
+
+    def get_cad_by_name(self, name):
+        return self.cads.get_by_declaration_name(name)
     
 
 

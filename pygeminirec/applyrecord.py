@@ -163,19 +163,26 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
 
             if current_timestamp != last_timestamp:
+                last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
 
                 idle = await self.are_all_cars_idle()
 
-                if idle or self.preset:
+                abort = await self.get_cad_by_name("abort") #special case - we need to know the specific cad first since cads will not be idle
+                                                            #idle acts like a CAD/CAR mutex, we can't get in unless idle, but abort needs to break in
+
+                if idle or self.preset or abort.DIR == CADDirective.MARK:
                     self.preset = False         # preset is a special case, normally DIR is set in process_apply_directive
                                                 # if a command errors out, we need to force the preset to update directives
                                                 # because cads will not be idle, they will be in error
 
                     # If the timestamp has changed, process the directive with the current value
                     await self.process_apply_directive(current_value)
-                    last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
+
+                    print("Creating Directive Task")
+                    asyncio.create_task(self.process_apply_directive(current_value))
+                    print("Task Created")       
+
                 else:
-                    last_timestamp = current_timestamp  # Update last_timestamp to the new timestamp
                     debug_print("Not executing Directive: Not all CARs are IDLE")
 
             await asyncio.sleep(0.01)  # Short sleep to prevent a tight loop
