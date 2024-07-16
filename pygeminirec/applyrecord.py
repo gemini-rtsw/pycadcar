@@ -167,10 +167,14 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
                 idle = await self.are_all_cars_idle()
 
-                abort = await self.get_cad_by_name("abort") #special case - we need to know the specific cad first since cads will not be idle
-                                                            #idle acts like a CAD/CAR mutex, we can't get in unless idle, but abort needs to break in
+                abort_cad = await self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
 
-                if idle or self.preset or abort.DIR == CADDirective.MARK:
+                abort = False
+                if abort_cad != None and abort_cad.DIR == CADDirective.MARK:
+                    abort = True
+
+
+                if idle or self.preset or abort:
                     self.preset = False         # preset is a special case, normally DIR is set in process_apply_directive
                                                 # if a command errors out, we need to force the preset to update directives
                                                 # because cads will not be idle, they will be in error
