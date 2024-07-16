@@ -180,8 +180,6 @@ class ApplyRecord(PVGroup, BaseExecutor):
                                                 # because cads will not be idle, they will be in error
 
                     # If the timestamp has changed, process the directive with the current value
-                    await self.process_apply_directive(current_value)
-
                     print("Creating Directive Task")
                     asyncio.create_task(self.process_apply_directive(current_value))
                     print("Task Created")       
