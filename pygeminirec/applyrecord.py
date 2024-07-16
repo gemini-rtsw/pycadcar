@@ -155,6 +155,14 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
         preset = False
 
+    async def is_abort_cad_marked(self):
+        abort_cad = self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
+
+        if abort_cad != None and abort_cad.DIR == 0: # CADDirective.MARK:
+            return True
+        
+        return False
+
 
     async def monitor_directive(self):
         last_timestamp = None
@@ -167,12 +175,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
                 idle = await self.are_all_cars_idle()
 
-                abort_cad = self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
-
-                abort = False
-                if abort_cad != None and abort_cad.DIR == 0: # CADDirective.MARK:
-                    abort = True
-
+                abort = self.is_abort_cad_marked()
 
                 if idle or self.preset or abort:
                     self.preset = False         # preset is a special case, normally DIR is set in process_apply_directive
