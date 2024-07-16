@@ -11,13 +11,13 @@ class BaseExecutor:
     def __init__(self):
         self.cads = RecordLinks()
         self.cars = RecordLinks()
-        idle_override = False  # idle override is used to create an abort cad 
+        self.idle_override = False  # idle override is used to create an abort cad 
                                # cads are block from executing until all directive are complete aka idle
                                # an abort cad needs to execute while a directive is still busy in order to abort it
 
 
     def set_idle_override(self, val):
-        idle_override = val
+        self.idle_override = val
 
     # update_all_cad_states - processes the command on itself as well as all chile CADs
     # process_all_cad_directives - does not process on itself because it is only called form an Apply
