@@ -167,7 +167,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
                 idle = await self.are_all_cars_idle()
 
-                abort_cad = await self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
+                abort_cad = self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
 
                 abort = False
                 if abort_cad != None and abort_cad.DIR == CADDirective.MARK:
