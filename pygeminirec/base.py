@@ -45,7 +45,7 @@ class BaseExecutor:
         return await self.cars.execute_on_all('cars', 'is_idle', **kwargs)
     
     async def are_any_cads_idle_override(self, **kwargs):
-        debug_print(f"Checking CARs for IDLE Override State")
+        debug_print(f"Checking CADs for IDLE Override State")
         return not await self.cars.execute_on_all('cads', 'get_not_idle_override', **kwargs)
     
     async def set_state(self, **kwargs):
