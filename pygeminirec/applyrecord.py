@@ -156,9 +156,10 @@ class ApplyRecord(PVGroup, BaseExecutor):
         preset = False
 
     async def is_abort_cad_marked(self):
-        abort_cad = self.get_idle_override() #idle acts like a CAD/CAR mutex, abort cads need to beable to override
+        #idle acts like a CAD/CAR mutex, abort cads need to beable to override
+        ret = await self.are_any_cads_idle_override()
 
-        if abort_cad != None and abort_cad.DIR == 0: # CADDirective.MARK:
+        if ret and self.DIR.value == 3:  # found an abort cad with DIR=MARK and apply.DIR = START
             return True
         
         return False
@@ -175,9 +176,13 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
                 idle = await self.are_all_cars_idle()
 
-                abort = self.is_abort_cad_marked()
+                abort = await self.is_abort_cad_marked()
 
-                if idle or self.preset or abort:
+                if abort:
+                    print("Processing Abort Directive")
+                    await self.errored_record.process_cad_directive(directive=current_value)
+                    print("Abort Processed")       
+                elif idle or self.preset:
                     self.preset = False         # preset is a special case, normally DIR is set in process_apply_directive
                                                 # if a command errors out, we need to force the preset to update directives
                                                 # because cads will not be idle, they will be in error
@@ -280,6 +285,7 @@ class ApplyRecord(PVGroup, BaseExecutor):
 
     async def MESSputter(self, instance, value):
         debug_print(f'{self.prefix}MESS value changed to: {value}')
+
 
 
 

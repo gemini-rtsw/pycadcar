@@ -33,8 +33,6 @@ class RecordLinks:
                 return record
         return None
 
-
-# only implemented for one layer of CAD/CAR any more need work
         
     async def execute_on_all(self, caller, command_func_name, reverse=False, **kwargs):
         
@@ -52,20 +50,20 @@ class RecordLinks:
             if not reverse:
                 result = await self.process_current_record(record, command_func_name, **kwargs)
                 if result <= 0:
-                    return result
+                    return result, record
 
             # Recursively call execute_on_all on the selected records_to_process
-            recursive_result = await records_to_process.execute_on_all(caller, command_func_name, reverse=reverse, **kwargs)
+            recursive_result, recursive_record = await records_to_process.execute_on_all(caller, command_func_name, reverse=reverse, **kwargs)
             if recursive_result <= 0:
-                return recursive_result
+                return recursive_result, recursive_record
 
             # If reversing, process the current record's command after the recursive call (tail recursion)
             if reverse:
                 result = await self.process_current_record(record, command_func_name, **kwargs)
                 if result <= 0:
-                    return result
+                    return result, record
 
-        return True
+        return True, None
 
     async def process_current_record(self, record, command_func_name, **kwargs):
         # Retrieve and execute the command method on the current record
@@ -76,4 +74,6 @@ class RecordLinks:
                 return await command_method(**kwargs)
         
         debug_print(f"Command function {command_func_name} does not exist on record {record}")
+        record.errored_record = record
         return False
+
