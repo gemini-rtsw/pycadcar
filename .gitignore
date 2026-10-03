@@ -37,3 +37,7 @@ nosetests.xml
 Thumbs.db
 
 /build
+rpms/
+build/
+*.egg-info/
+__pycache__/
