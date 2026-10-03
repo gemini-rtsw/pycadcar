@@ -11,8 +11,8 @@ jobs:
     with:
       scripts_dir: gemini-rtsw-ci
       profile: lightweight
-      # EL8 only: installs into the EL8 python39 stream the GNIRS DC runtime uses.
-      el_version: '8'
+      # EL9 only: installs for EL9's Python 3.9, which the GNIRS DC image runs.
+      el_version: '9'
       spec_path: packaging/pycadcar.spec
 
   publish:
